@@ -24,6 +24,9 @@
     <Compile Include="App.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Manager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="pythonTest.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
