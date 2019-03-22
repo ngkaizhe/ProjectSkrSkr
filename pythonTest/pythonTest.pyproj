@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>be87d52c-3552-441c-8db6-9064d7bdb019</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>pythonTest.py</StartupFile>
+    <StartupFile>Matrix.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -25,6 +25,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Manager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Matrix.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="pythonTest.py" />
