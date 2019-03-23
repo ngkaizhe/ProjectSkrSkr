@@ -1,6 +1,3 @@
-from typing import List, Union
-
-
 class Matrix(object):
     """description of class"""
 
