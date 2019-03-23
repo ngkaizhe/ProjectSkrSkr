@@ -8,29 +8,13 @@ class Matrix(object):
 
         # type checking
         # if illegal passing through value
-        if not self.type_checking(matrix):
+        if not self.type_checking(matrix, rows, cols):
             # TODO: illegal type pass back exceptions
+            print('Thread found')
             return
 
         # not 1d
         elif isinstance(matrix[0], list):
-
-            # if user pass in the rows and cols, constructor will check whether it is true or not
-            if rows is not None and cols is not None:
-                if len(matrix) != rows | len(matrix[0]) != cols:
-                    # TODO: different rows and cols value against passed in matrix, return exception
-                    return
-
-            # check whether all element inside the list is list(2d)
-            for i in matrix:
-                if not isinstance(matrix[i], list):
-                    # TODO: some elements inside matrix was not list, return exception
-                    return
-                for j in matrix[i]:
-                    if not (isinstance(matrix[i][j], int) and isinstance(matrix[i][j], float)):
-                        # TODO: some elements inside matrix[i] was not integer or float, return exception
-                        return
-
             # all conditions has been considered
             self.matrix = matrix
 
@@ -45,12 +29,7 @@ class Matrix(object):
             #    self.matrix.append(temp)
 
             # python version
-            if rows is not None and cols is not None:
-                self.matrix = [[matrix[i * cols + j] for j in range(cols)] for i in range(rows)]
-
-            else:
-                # TODO: passing in a 1d array without passing value to rows and cols, return exception
-                return
+            self.matrix = [[matrix[i * cols + j] for j in range(cols)] for i in range(rows)]
 
     # matrix addition
     def __add__(self, other) -> 'Matrix':
@@ -126,20 +105,61 @@ class Matrix(object):
         for i in self.matrix:
             print(i)
 
+    @staticmethod
     # this function will check if matrix is list
-    def type_checking(self, matrix: list) -> bool:
+    def type_checking(matrix: list, rows: int = None, cols: int = None) -> bool:
 
         # check whether it is a list
         if not isinstance(matrix, list):
             return False
 
+        # not 1d type checking
+        elif isinstance(matrix[0], list):
+            # if user pass in the rows and cols, constructor will check whether it is true or not
+            if rows is not None and cols is not None:
+                if len(matrix) != rows | len(matrix[0]) != cols:
+                    # different rows and cols value against passed in matrix, return False
+                    return False
+
+            # check whether all element inside the list is list
+            for i in matrix:
+                if not isinstance(i, list):
+                    # some elements inside matrix was not list, return False
+                    return False
+                for j in i:
+                    if not (isinstance(j, int) or isinstance(j, float)):
+                        # some elements inside i was not integer or float, return False
+                        return False
+
+        # 1d type checking
         else:
-            return True
+            # check the value and type of rows and cols
+            if rows is None and cols is None:
+                # the rows or cols is None, return False
+                return False
+
+            else:
+                if not (isinstance(rows, int) and isinstance(cols, int)):
+                    # type of rows and cols is not int, return False
+                    return False
+
+            # check all elements inside the given matrix is int or float
+            for i in matrix:
+                if not (isinstance(i, int) or isinstance(i, float)):
+                    # type of element inside matrix is not float or int, return False
+                    return False
+
+            if len(matrix) != rows * cols:
+                # the total length of 1d matrix was not same as rows * cols, return False
+                return False
+
+        # all conditions have been checked
+        return True
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     mat = Matrix([1, 10, 5, 7, 8, 7, 10, 11], 2, 4)
     mat2 = Matrix([1, 5, 4, 6, 7, 3, 6, 4, 2, 2, -1, 1], 4, 3)
 
-    (mat.transpose()).print_value()
+    (mat * mat2).print_value()
 
