@@ -12,6 +12,8 @@ def get_string(element: list, current_line: int, ndim: int, seperate_string: str
                 answer += seperate_string + '\n' * current_line
                 if isFormal and isinstance(element[0], list):
                     answer += ' ' * (6 + ndim - current_line)
+                elif isFormal is False and isinstance(element[0], list):
+                    answer += ' ' * (ndim - current_line)
             var += 1
 
     return answer + ']'

@@ -1,4 +1,5 @@
 from recursive_functions import *
+import copy
 
 class arrai(object):
     """description of class"""
@@ -13,6 +14,7 @@ class arrai(object):
         self.array = object
 
         self.set_ndim(self, object)
+        self.set_array(self, object)
         self.set_size(self, object)
         self.set_shape(self, object)
 
@@ -31,16 +33,15 @@ class arrai(object):
     def __getitem__(self, index):
         return self.array[index]
 
-    def reshape(self, shape: (tuple, list, int)):
-        shape_list = []
+    def reshape(self, shape: (tuple, list)):
         total = 1
 
-        # change int type to list type
-        if isinstance(shape, int) is True:
-            shape_list.append(shape)
-        else:
-            shape_list = shape
+        # shape can only contain 2 elements inside
+        if len(shape) is not 2:
+            # TODO: return exception
+            return
 
+        shape_list = shape
         # get the total value inside shape
         for i in shape_list:
             total *= i
@@ -67,12 +68,13 @@ class arrai(object):
         return cls.full(shape, 0)
 
     @classmethod
-    def full(cls, shape: (tuple, list, int), value=0):
+    def full(cls, shape: (tuple, list), value=0):
         List: list = []
 
-        # 1d
-        if isinstance(shape, int) is True:
-            List = List.append(shape)
+        # shape can only contain 2 elements inside
+        if len(shape) is not 2:
+            # TODO: return exception
+            return
 
         temp_list = value
         for x in reversed(shape):
@@ -85,6 +87,7 @@ class arrai(object):
 
     @classmethod
     def identity(cls, shape: (tuple, list)):
+
         List = []
         # only use for ndim = 2
         if len(shape) is 2:
@@ -103,7 +106,7 @@ class arrai(object):
             pass
 
     @classmethod
-    def arange(cls, total):
+    def arange(cls, total: int):
         new_list = []
         for i in range(total):
             new_list.append(i)
@@ -152,13 +155,39 @@ class arrai(object):
 
         self.shape = tuple(tempList)
 
+    @staticmethod
+    def set_array(self, object: list) -> None:
+
+        # scalar passing inside, shape will be 1*1
+        if self.ndim is 0:
+            self.array = [[]];
+            self.array[0].append(object)
+            self.ndim = 2
+
+        # vector passing inside/ 1S array
+        elif self.ndim is 1:
+            self.array = []
+            self.array.append(object)
+            self.ndim = 2
+
+        # matrix/ 2S array passing inside
+        elif self.ndim is 2:
+            self.array = object
+
+        else:
+            #TODO : return exceptions
+            self.array = None
+            pass
+
+
+
 
 if __name__ == "__main__":
     mat = arrai([[1, 10, 5, 7], [8, 7, 10, 11]])
     mat2 = arrai([1, 5, 4, 6, 7, 3, 6, 4, 2, 2, -1, 1])
     mat4 = arrai.arange(12)
 
-    temp = mat.reshape((3, 2, 2))
+    temp = mat.reshape((4, 2))
     print(repr(temp))
     print()
-    print(temp.reshape(8))
+    print(repr(temp.reshape((8, 1))))
