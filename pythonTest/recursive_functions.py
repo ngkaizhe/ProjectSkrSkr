@@ -1,15 +1,17 @@
 # recursive function below
-def get_string(element: list, current_line: int, ndim: int) -> str:
-    if isinstance(element[0], list) is False:
+def get_string(element: list, current_line: int, ndim: int, seperate_string: str, isFormal: bool) -> str:
+    if isinstance(element, list) is False:
         return str(element)
 
     else:
         answer = '['
         var = 1
         for x in element:
-            answer += get_string(x, current_line - 1, ndim)
+            answer += get_string(x, current_line - 1, ndim, seperate_string, isFormal)
             if var is not len(element):
-                answer += ',' + '\n' * current_line + ' ' * (6 + ndim - current_line)
+                answer += seperate_string + '\n' * current_line
+                if isFormal and isinstance(element[0], list):
+                    answer += ' ' * (6 + ndim - current_line)
             var += 1
 
     return answer + ']'

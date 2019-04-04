@@ -17,19 +17,15 @@ class arrai(object):
         self.set_shape(self, object)
 
     def __repr__(self):
-        if self.ndim is 1:
-            return 'Vector({0})'.format(self.array)
-
-        elif self.ndim is 2:
-            return 'Matrix({0})'.format(self.array)
-
-        else:
-            return '{0} dimension array({1})'.format(self.ndim, self.array)
+        answer = 'arrai('
+        answer += get_string(self.array, self.ndim - 1, self.ndim, ',', True)
+        answer += ')'
+        return answer
 
     def __str__(self):
-        answer = 'arrai('
-        answer += get_string(self.array, self.ndim - 1, self.ndim)
-        answer += ')'
+        answer = ''
+        answer += get_string(self.array, self.ndim - 1, self.ndim, ' ', False)
+        answer += ''
         return answer
 
     def __getitem__(self, index):
@@ -162,6 +158,7 @@ if __name__ == "__main__":
     mat2 = arrai([1, 5, 4, 6, 7, 3, 6, 4, 2, 2, -1, 1])
     mat4 = arrai.arange(12)
 
-    temp = mat.reshape((4, 2))
-    print(temp)
+    temp = mat.reshape((3, 2, 2))
+    print(repr(temp))
+    print()
     print(temp.reshape(8))
