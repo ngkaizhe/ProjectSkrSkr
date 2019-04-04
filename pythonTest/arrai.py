@@ -1,5 +1,4 @@
 from recursive_functions import *
-import copy
 
 class arrai(object):
     """description of class"""
@@ -58,7 +57,6 @@ class arrai(object):
 
             return arrai(new_list)
 
-    # class method
     @classmethod
     def ones(cls, shape: (tuple, list, int)):
         return cls.full(shape, 1)
@@ -159,19 +157,19 @@ class arrai(object):
     def set_array(self, object: list) -> None:
 
         # scalar passing inside, shape will be 1*1
-        if self.ndim is 0:
-            self.array = [[]];
+        if self.ndim == 0:
+            self.array = [[]]
             self.array[0].append(object)
             self.ndim = 2
 
         # vector passing inside/ 1S array
-        elif self.ndim is 1:
+        elif self.ndim == 1:
             self.array = []
             self.array.append(object)
             self.ndim = 2
 
         # matrix/ 2S array passing inside
-        elif self.ndim is 2:
+        elif self.ndim == 2:
             self.array = object
 
         else:
@@ -179,15 +177,60 @@ class arrai(object):
             self.array = None
             pass
 
+    # overload operator
+    def __add__(self, other):
+        if (isinstance(self, arrai) and isinstance(other, arrai)) is False:
+            # TODO: return exception
+            return
 
+        temp_list_2S = []
+        if self.shape == other.shape:
+            for list1, list2 in zip(self.array, other.array):
+                temp_list_1S = [];
+                for x, y in zip(list1, list2):
+                    temp_list_1S.append(x + y)
+                temp_list_2S.append(temp_list_1S)
+
+        return arrai(temp_list_2S)
+
+    def __sub__(self, other):
+        if (isinstance(self, arrai) and isinstance(other, arrai)) is False:
+            # TODO: return exception
+            return
+
+        temp_list_2S = []
+        if self.shape == other.shape:
+            for list1, list2 in zip(self.array, other.array):
+                temp_list_1S = [];
+                for x, y in zip(list1, list2):
+                    temp_list_1S.append(x - y)
+                temp_list_2S.append(temp_list_1S)
+
+        return arrai(temp_list_2S)
+
+
+def dot(a: arrai, b: arrai) -> (float, int):
+    total = 0
+    # only work for vectors ( m*1 / 1*m)
+    if (a.shape[0] is 1) and (b.shape[0] is 1) and a.shape[1] is b.shape[1]:
+        for (x, y) in zip(a.array[0], b.array[0]):
+            total += x * y
+        return total
+
+    else:
+        # TODO: return exception
+        return
 
 
 if __name__ == "__main__":
     mat = arrai([[1, 10, 5, 7], [8, 7, 10, 11]])
     mat2 = arrai([1, 5, 4, 6, 7, 3, 6, 4, 2, 2, -1, 1])
-    mat4 = arrai.arange(12)
+    mat4 = arrai.arange(8)
 
     temp = mat.reshape((4, 2))
-    print(repr(temp))
-    print()
-    print(repr(temp.reshape((8, 1))))
+    temp2 = mat4.reshape((4, 2))
+
+    print(temp)
+    print(temp2)
+    print(temp+1)
+
