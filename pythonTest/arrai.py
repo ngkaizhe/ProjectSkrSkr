@@ -7,15 +7,14 @@ class arrai(object):
     # create an array
     def __init__(self, object: list) -> None:
         # attribute definition
-        self.ndim = 0
-        self.size = 1
-        self.shape: tuple = None
-        self.array = object
+        if (isinstance(object, list) is False
+            and isinstance(object, int) is False
+            and isinstance(object, float) is False):
+                raise TypeError("Argument must be of type list or numerical values")
 
-        self.set_ndim(self, object)
-        self.set_array(self, object)
-        self.set_size(self, object)
-        self.set_shape(self, object)
+        self.ndim = 0 # Number of array dimensions.
+        self.shape = 0
+        self.set_array(object)
 
     def __repr__(self):
         answer = 'arrai('
@@ -111,71 +110,87 @@ class arrai(object):
 
         return cls(new_list)
 
+
     # static method
-    @staticmethod
     # set up attribute part
-    def set_ndim(self, object: list) -> None:
+    @staticmethod
+    def get_ndim(object: list) -> int:
 
-        if isinstance(object, list) is False:
-            # TODO: throw exception
-            return
-
+        ndim = 0
         element = object
 
         while isinstance(element, list) is True:
             element = element[0]
-            self.ndim += 1
+            ndim += 1
+        return ndim;
 
     @staticmethod
-    def set_size(self, object: list) -> None:
+    def get_shape(object: list) -> int:
 
-        if isinstance(object, list) is False:
-            # TODO : return exception
-            return
-
+        shape = []
         element = object
         while isinstance(element, list) is True:
-            self.size *= len(element)
+            shape.append(len(element))
             element = element[0]
 
-    @staticmethod
-    def set_shape(self, object: list) -> None:
+        return shape
 
-        if isinstance(object, list) is False:
-            # TODO : return exception
+    @staticmethod
+    def check_validity(self) -> None:
+        if(self.ndim != 2):
             return
+        for i in self.array:
+            if(len(i) != self.shape[1]):
+                raise ValueError('Not a valid n * m matrix')
+            for j in i:
+                if(not(isinstance(j, int) or isinstance(j, float))):
+                    raise ValueError("Element must be numerical values")
 
-        tempList = []
-        element = object
-        while isinstance(element, list) is True:
-            tempList.append(len(element))
-            element = element[0]
+        return
+        # check if this array is a valid array applicable
 
-        self.shape = tuple(tempList)
-
-    @staticmethod
     def set_array(self, object: list) -> None:
 
+        self.ndim = arrai.get_ndim(object)
         # scalar passing inside, shape will be 1*1
         if self.ndim == 0:
             self.array = [[]]
             self.array[0].append(object)
             self.ndim = 2
 
-        # vector passing inside/ 1S array
+        # vector passing inside/ 1D array
         elif self.ndim == 1:
             self.array = []
             self.array.append(object)
             self.ndim = 2
 
-        # matrix/ 2S array passing inside
+        # matrix/ 2D array passing inside
         elif self.ndim == 2:
             self.array = object
 
         else:
-            #TODO : return exceptions
+            
             self.array = None
-            pass
+
+        if(self.array == None):
+            raise ValueError("array cannot be blank")
+            #TODO : throw exceptions
+        
+        self.shape = arrai.get_shape(self.array)
+        arrai.check_validity(self)
+
+    def dot(self, other):
+        return dot(self, other);
+
+    def transpose(self):
+        return transpose(self);
+
+    def isscalar(self):
+        if ((self.shape[0] is 1) and (self.shape[1] is 1)):
+            return True
+        else:
+            return False
+
 
     # overload operator
     def __add__(self, other):
@@ -209,17 +224,29 @@ class arrai(object):
         return arrai(temp_list_2S)
 
 
-def dot(a: arrai, b: arrai) -> (float, int):
-    total = 0
+def dot(a: arrai, b: arrai) -> arrai:
+    mat = []
     # only work for vectors ( m*1 / 1*m)
-    if (a.shape[0] is 1) and (b.shape[0] is 1) and a.shape[1] is b.shape[1]:
-        for (x, y) in zip(a.array[0], b.array[0]):
-            total += x * y
-        return total
+    if (a.shape[0] == b.shape[1] 
+        and a.shape[1] == b.shape[0]):
 
+        for i in range(a.shape[0]):
+            row = []
+            for j in range(b.shape[1]):
+                sum_product = 0         
+                for k in range(a.shape[1]):
+                    sum_product += a.array[i][k] * b.array[k][j]
+                row.append(sum_product)
+            mat.append(row)
+        return arrai(mat)
     else:
-        # TODO: return exception
-        return
+        raise ValueError("Array dimension mismatched! (%d * %d) and (%d * %d)" %
+            (a.shape[0], a.shape[1], b.shape[0], b.shape[1]))
+
+
+def transpose(a: arrai) -> arrai:
+    ret = [[row[i] for row in a.array] for i in range(a.shape[1])]
+    return arrai(ret)
 
 
 if __name__ == "__main__":
