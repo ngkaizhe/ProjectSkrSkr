@@ -1,8 +1,8 @@
 from arrai import Arrai
 import arrai as ar
 if __name__ == "__main__":
-	a = Arrai([[1,2,3],[3,4,7]])
-	b = Arrai([[6], [5], [4]])
+	a = Arrai([[100000000,2,3,4,5],[3,4,7,1,2],[2,1,3,3,4],[3,4,7,1,2],[1,2,3,4,5]])
+	b = Arrai([[6], [5], [4],[3],[2]])
 	print("A: \n%s\n" % a)
 	print("B: \n%s\n" % b)
 	c = a.mul(b)
@@ -29,3 +29,15 @@ if __name__ == "__main__":
 	print(ar.dot(Arrai([1,2,3]), Arrai([2,3,5])))
 	print(ar.dot(Arrai([1,2,3]), Arrai([[2],[3],[5]])))
 	print(ar.dot(Arrai([[2],[3],[5]]), Arrai([1,2,3])))
+	print("A: \n%s\n" % a)
+	print("A: \n%s\n" % (a.col(0) - a.col(1)))
+	print("A: \n%s\n" % a.swap_row(0, 1))
+	print("A: \n%s\n" % a.swap_col(2, 3))
+	print("A: \n%s\n" % a)
+
+	f = Arrai([[1,2,-1],[2,3,-1],[-2,0,22],[3,17,23]])
+	g = Arrai([[1,2,3],[2,4,5],[4,7,9]])
+	print("RREF: %s" % ar.to_RREF(f))
+	print("RREF: %s" % ar.to_RREF(g))
+	print("Inverse: %s" % ar.inverse(g))
+	print("F/G: %s" % (f/g))

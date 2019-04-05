@@ -1,5 +1,6 @@
 from recursive_functions import *
 from enum import Enum
+import copy
 
 NumberTypes = (int, float, complex)
 
@@ -27,9 +28,10 @@ class Arrai(object):
         return answer
 
     def __str__(self):
-        answer = ''
-        answer += get_string(self.array, self.ndim - 1, self.ndim, ' ', False)
-        answer += ''
+        answer = '\n'
+        answer += get_string(self.array, self.ndim - 1, self.ndim, '  ', False)
+        answer += '\n'
+
         return answer
 
     def __getitem__(self, index):
@@ -56,7 +58,7 @@ class Arrai(object):
         return mul(self, other)
 
     def __truediv__(self, other):
-        return inv(self, other)
+        return div(self, other)
 
     def reshape(self, shape: (tuple, list)):
         total = 1
@@ -222,11 +224,143 @@ class Arrai(object):
         return Arrai([[self.array[i][index]] for i in range(self.shape[0])])
 
     def el(self, index: int) -> NumberTypes:
-        if(index < shape[0] * shape[1]):
-            return self[index / shape[1]][index % shape[1]]
+        if(index < self.shape[0] * self.shape[1]):
+            return self[index / self.shape[1]][index % self.shape[1]]
+
+    def length(self) -> int: # Length of largest array dimension
+        return max(self.shape[0], self.shape[1])
+
+    def set_row(self, r: int, vec: 'Arrai') -> 'Arrai':
+        return set_row(self, r, vec)
+
+    def set_col(self, r: int, vec: 'Arrai') -> 'Arrai':
+        return set_col(self, c, vec)
+
+    def swap_row(self, r1: int, r2: int) -> 'Arrai':
+        return swap_row(self, r1, r2)
+
+    def swap_col(self, r1: int, r2: int) -> 'Arrai':
+        return swap_col(self, r1, r2)
+
+
 
 
     # Perform element wise arithmetic operation
+
+    # https://rosettacode.org/wiki/Reduced_row_echelon_form for psudocode
+    # Reduced Row Echelon Form 
+    # will return a tuple(RREF, INVERSE) if inverse calculation is enabled
+    # otherwise only RREF(of type Arrai) is returned
+def to_RREF(arr: Arrai, f_calculate_inverse: bool = False) -> Arrai: #(tuple(Arrai, Arrai))
+
+    if not isinstance(arr, Arrai):
+        Explosion.INVALID_ARGS_NOT_ARRAI.bang()
+
+    if(f_calculate_inverse):
+        if not is_square(arr):
+            f_calculate_inverse = False
+            Explosion.INVERSE_NOT_SQUARE_ARRAI.bang()
+        else:
+            ret_inv = Arrai.identity((arr.length(), arr.length()))
+
+    i_lead = 0 # Index of column vector in matrix
+    row_count = arr.shape[0]
+    col_count = arr.shape[1]
+
+    ret = copy.deepcopy(arr)
+
+    for r in range(row_count):
+        if(i_lead >= col_count): return ret
+        i = r
+        while(ret[i][i_lead] == 0):
+            i += 1
+            if(i == row_count):
+                i = r
+                i_lead += 1
+                if(i_lead == col_count): return ret
+        ret = swap_row(ret, i, r)
+        if(f_calculate_inverse): ret_inv = swap_row(ret_inv, i, r)
+
+        if(ret[r][i_lead] != 0): # Make the lead to be 1 by dividing whole row by lead itself
+            lead = ret[r][i_lead]
+            ret = ret.set_row(r, ret.row(r) / lead);
+            if(f_calculate_inverse): ret_inv = ret_inv.set_row(r, ret_inv.row(r) / lead);
+
+        for i in range(row_count): # Elementary row operation to clean up columns
+            if(i == r): continue
+            lead = ret[i][i_lead]
+            ret = ret.set_row(i, ret.row(i) - ret.row(r) * lead)
+            if(f_calculate_inverse): ret_inv = ret_inv.set_row(i, ret_inv.row(i) - ret_inv.row(r) * lead);
+        i_lead += 1
+    if(f_calculate_inverse): return (ret, ret_inv)
+    else: return ret
+
+
+
+#Function to set row vector of index r of arr
+def set_row(arr: Arrai, r: int, vec: Arrai) -> Arrai:
+    if(r >= arr.shape[0]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[1]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    ret = copy.deepcopy(arr)
+    vec = to_row_vector(vec)
+    ret.array[r] = [el for el in vec[0]]
+    return ret
+
+# Function to set column vector of index c of arr
+def set_col(arr: Arrai, c: int, vec: Arrai) -> Arrai:
+    if(c >= arr.shape[1]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[0]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    ret = copy.deepcopy(arr)
+    vec = to_row_vector(vec)
+    for i in range(len(ret.array)):
+        ret[i][c] = vec[0][i]
+
+    return ret
+
+# Function to convert vector to row vector
+def to_row_vector(vec: Arrai) -> Arrai:
+    if not is_vector(vec): 
+        Explosion.CONVERT_NOT_VECTOR.bang()
+    l = vec.length()
+    if vec.shape[0] == l: # Is col vector
+        return Arrai([i[0] for i in vec])
+    else: # Is row vector
+        return Arrai([i for i in vec[0]])
+
+def to_col_vector(vec: Arrai) -> Arrai:
+    return transpose(to_row_vector(vec))
+
+
+# Return a new Arrai with swapped rows
+def swap_row(arr: Arrai, r1: int, r2: int) -> Arrai:
+    if r1 >= arr.shape[0] or r2 >= arr.shape[0]:
+        Explosion.SWAP_DIM_EXCEED.bang()
+        return
+
+    mat = copy.deepcopy(arr.array)
+    mat[r1], mat[r2] = mat[r2], mat[r1]
+    return Arrai(mat)
+
+# Return a new Arrai with swapped columns
+def swap_col(arr: Arrai, r1: int, r2: int) -> Arrai:
+    if r1 >= arr.shape[1] or r2 >= arr.shape[1]:
+        Explosion.SWAP_DIM_EXCEED.bang()
+        return
+
+    mat = copy.deepcopy(arr.array)
+    for i in range(len(mat)):
+        mat[i][r1], mat[i][r2] = mat[i][r2], mat[i][r1]
+    return Arrai(mat)
 
 
 class Explosion(Enum):
@@ -236,9 +370,15 @@ class Explosion(Enum):
     INVALID_ARITHMETIC_OPERATOR = ValueError("Invalid Operator")
     INVALID_ARITHMETIC_OPERAND = ValueError("Invalid Operand")
     ARITHMETIC_SHAPE_MISMATCH = ValueError("Arithmetic requires both to be of same dimension or either one to be a scalar")
-    DOT_SHAPE_MISMATCH = ValueError("Dot requires both to be of same dimension")
     SUM_SHAPE_MISMATCH = ValueError("Sum requires both to be of same dimension")
+    DOT_SHAPE_MISMATCH = ValueError("Dot requires both to be of same dimension")
     DOT_DIM_MISMATCH = ValueError("Array dimension mismatched!")
+    SWAP_DIM_EXCEED = ValueError("Swap Dim")
+    SET_DIM_EXCEED = ValueError("Set Row")
+    SET_INVALID_VECTOR = ValueError("Invalid Vector")
+    CONVERT_NOT_VECTOR = ValueError("Not a vector to be converted")
+    INVALID_ARGS_NOT_ARRAI = ValueError("Arguments must be arrai");
+    INVERSE_NOT_SQUARE_ARRAI = ValueError("Matrix must be square inorder to find inverse")
 
     def bang(self):
         raise self.value
@@ -378,14 +518,22 @@ def mul(first: Arrai, second: Arrai) -> Arrai:
     else:
         Explosion.DOT_DIM_MISMATCH.bang()
 
-def inv(first: Arrai, second: Arrai) -> Arrai:
+def div(first: Arrai, second: Arrai) -> Arrai:
     if is_scalar(second):
         return basic_arithmetic(first, second, '/')
 
     if not isinstance(first, Arrai):
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()
-        #TODO
+        return
 
+    else:
+        return first * inverse(second)
+
+
+def inverse(arr: Arrai) -> Arrai:
+    out_inv = to_RREF(arr, f_calculate_inverse = True)[1]
+    
+    return out_inv
 
 def transpose(arr: Arrai) -> Arrai:
     ret = [[row[i] for row in arr.array] for i in range(arr.shape[1])]
@@ -401,6 +549,12 @@ def is_vector(object: Arrai):
 
 
 # Check whether it is scalr or not. applicaple for both NumberTypes and Arrai
+def is_square(object: Arrai):
+    if(isinstance(object, Arrai)):
+        if(object.shape[0] == object.shape[1]):
+            return True
+    return False 
+
 def is_scalar(object):
     if(isinstance(object, NumberTypes)):
         return True
