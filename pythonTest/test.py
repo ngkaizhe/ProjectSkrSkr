@@ -1,13 +1,22 @@
-from arrai import arrai
-
+from arrai import Arrai
+import arrai as ar
 if __name__ == "__main__":
-	a = arrai([1,2])
-	b = arrai([[6], [5]])
+	a = Arrai([1,2])
+	b = Arrai([[6], [5]])
 	print("A: \n%s\n" % a)
 	print("B: \n%s\n" % b)
-	c = a.dot(b)
+	c = a.mul(b)
 	print("A * B: \n%s\n" % c)
 	print("A': \n%s\n" % a.transpose())
-	d = a.dot(a.transpose())
+	d = a.mul(a.transpose())
 	print("AA': \n%s\n" % d)
-	#print(3*c)
+
+	e = Arrai(3)
+	print(10+a)
+	print(a)
+	print(a  * e)
+	print(e * a)
+	print(a)
+	print(a-5)
+	print(a*3)
+	print(a*3^33)
