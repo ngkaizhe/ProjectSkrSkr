@@ -8,6 +8,7 @@ class Arrai(object):
 
     # instance methods
     # create an array
+
     def __init__(self, object: list) -> None:
         # attribute definition
         if (isinstance(object, list) is False
@@ -181,6 +182,9 @@ class Arrai(object):
         self.shape = Arrai.get_shape(self.array)
         Arrai.check_validity(self)
 
+    def dot(self, other) -> 'Arrai':
+        return dot(self, other)
+
     def mul(self, other) -> 'Arrai':
         return mul(self, other)
 
@@ -190,6 +194,7 @@ class Arrai(object):
 
     # overload operator
     def __add__(self, other):
+        print(type(other))
         return basic_arithmetic(self, other, '+')
 
     def __radd__(self, other):
@@ -210,6 +215,15 @@ class Arrai(object):
     def __truediv__(self, other):
         return inv(self, other)
 
+    def row(self, index: int) -> 'Arrai':
+        return Arrai(self.array[index])
+
+    def col(self, index: int) -> 'Arrai':
+        return Arrai([[self.array[i][index]] for i in range(self.shape[0])])
+
+    def el(self, index: int) -> NumberTypes:
+        if(index < shape[0] * shape[1]):
+            return self[index / shape[1]][index % shape[1]]
 
 
     # Perform element wise arithmetic operation
@@ -221,7 +235,9 @@ class Explosion(Enum):
     INVALID_NUMERICAL_TYPE = ValueError("Element must be numerical values");
     INVALID_ARITHMETIC_OPERATOR = ValueError("Invalid Operator")
     INVALID_ARITHMETIC_OPERAND = ValueError("Invalid Operand")
-    ARITHMETIC_SHAPE_MISMATCH = ValueError("Arithmetic required both to be of same dimension or either one to be a scalar")
+    ARITHMETIC_SHAPE_MISMATCH = ValueError("Arithmetic requires both to be of same dimension or either one to be a scalar")
+    DOT_SHAPE_MISMATCH = ValueError("Dot requires both to be of same dimension")
+    SUM_SHAPE_MISMATCH = ValueError("Sum requires both to be of same dimension")
     DOT_DIM_MISMATCH = ValueError("Array dimension mismatched!")
 
     def bang(self):
@@ -229,7 +245,6 @@ class Explosion(Enum):
 
 
 # helper func for basic arithmetic operation, element-wise
-# One of the operand(s) must be Arrai
 def basic_arithmetic(first: Arrai, second: Arrai, op: str):
 
     scalar = None
@@ -278,6 +293,70 @@ def basic_arithmetic(first: Arrai, second: Arrai, op: str):
 
     return Arrai(mat) 
 
+
+
+"""
+Follow Matlab definition
+sum is reserved for python, thus zum is used
+dim = 1: summation for all column vectors
+dim = 2: summation for all row vectors
+"""
+
+def zum(first: Arrai, second: Arrai = None, dim = 1) -> Arrai:
+    if(isinstance(second, int)):
+        dim = second
+        second = None
+
+    if(second == None): 
+        second = Arrai.zeros(first.shape)
+
+    if (isinstance(first, Arrai) and isinstance(second, Arrai)) is False:
+        Explosion.INVALID_ARITHMETIC_OPERAND.bang();
+        return
+
+    elif(first.shape == second.shape):
+        ret = []
+        if(dim == 1):
+            for i in range(first.shape[1]):
+                total = 0
+                for j in range(first.shape[0]):
+                    total += first[j][i]
+                ret.append(total)
+        elif(dim == 2):
+            for i in first:
+                total = 0
+                for j in i:
+                    total += j
+                ret.append([total])
+        return Arrai(ret)
+    else:
+        Explosion.SUM_SHAPE_MISMATCH.bang()
+
+
+
+def dot(first: Arrai, second: Arrai, dim = 1) -> Arrai:
+
+    if (isinstance(first, Arrai) and isinstance(second, Arrai)) is False:
+        Explosion.INVALID_ARITHMETIC_OPERAND.bang();
+        return
+
+    elif(is_vector(first) and is_vector(second)):
+        if(first.shape[0] == 1 and first.shape[1] == second.shape[1]):
+            return first * transpose(second)
+        elif(first.shape[0] == 1 and first.shape[1] == second.shape[0]):
+            return first * second
+        elif(first.shape[1] == 1 and first.shape[0] == second.shape[0]):
+            return second * transpose(first)
+        elif(first.shape[1] == 1 and first.shape[0] == second.shape[1]):
+            return  second * first
+            
+    elif(first.shape == second.shape):
+        return zum(basic_arithmetic(first, second, '*'), dim)
+    else:
+        Explosion.DOT_SHAPE_MISMATCH.bang()
+
+
+
 def mul(first: Arrai, second: Arrai) -> Arrai:
 
     if (is_scalar(first) or is_scalar(second)):
@@ -287,8 +366,7 @@ def mul(first: Arrai, second: Arrai) -> Arrai:
         Explosion.INVALID_ARITHMETIC_OPERAND.bang();
         return
 
-    if (first.shape[0] == second.shape[1] 
-        and first.shape[1] == second.shape[0]):
+    if (first.shape[1] == second.shape[0]):
 
         mat = []
 
@@ -316,6 +394,12 @@ def inv(first: Arrai, second: Arrai) -> Arrai:
 def transpose(arr: Arrai) -> Arrai:
     ret = [[row[i] for row in arr.array] for i in range(arr.shape[1])]
     return Arrai(ret)
+
+def is_vector(object: Arrai):
+    if(isinstance(object, Arrai)):
+        if(object.shape[0] == 1 or object.shape[1] == 1):
+            return True
+    return False
 
 def is_scalar(object):
     if(isinstance(object, NumberTypes)):

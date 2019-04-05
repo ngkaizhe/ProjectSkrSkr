@@ -1,8 +1,8 @@
 from arrai import Arrai
 import arrai as ar
 if __name__ == "__main__":
-	a = Arrai([1,2])
-	b = Arrai([[6], [5]])
+	a = Arrai([[1,2,3],[3,4,7]])
+	b = Arrai([[6], [5], [4]])
 	print("A: \n%s\n" % a)
 	print("B: \n%s\n" % b)
 	c = a.mul(b)
@@ -13,10 +13,19 @@ if __name__ == "__main__":
 
 	e = Arrai(3)
 	print(10+a)
-	print(a)
+	print("A: \n%s\n" % a)
 	print(a  * e)
 	print(e * a)
 	print(a)
 	print(a-5)
 	print(a*3)
-	print(a*3^33)
+	print(a.col(0))
+	print("A(1,:): \n%s\n" % a.row(1))
+	print(ar.zum(a,a))
+	print(ar.zum(a,a,2))
+	print("sum row of A: \n%s\n" % ar.zum(a))
+	print("dot(A,A,1): \n%s\n" % ar.dot(a,a,1))
+	print("dot(A,A,2): \n%s\n" % ar.dot(a,a,2))
+	print(ar.dot(Arrai([1,2,3]), Arrai([2,3,5])))
+	print(ar.dot(Arrai([1,2,3]), Arrai([[2],[3],[5]])))
+	print(ar.dot(Arrai([[2],[3],[5]]), Arrai([1,2,3])))
