@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QToolTip, QPlainTextEdit, QLabel, QFileDialog
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
+from UIManager import UIManager
 
 class App(QWidget):
  
@@ -65,11 +66,13 @@ class App(QWidget):
         self.run_button.move(460, 200)
         self.run_button.setFont(font)
         self.run_button.setStyleSheet("text-align: center")
+        self.run_button.clicked.connect(self.run_result)
 
         self.set_button = QPushButton('set', self)
         self.set_button.move(350, 430)
         self.set_button.setFont(font)
         self.set_button.setStyleSheet("text-align: center")
+        self.set_button.clicked.connect(self.set_up_ui_manager)
 
     def setTextBox(self):
         # textbox part
@@ -109,7 +112,6 @@ class App(QWidget):
         if fileName:
             with open(fileName, 'r') as file:
                 read_data = file.read()
-
             self.input_textbox.setPlainText(read_data)
 
     def saveFileDialog(self):
@@ -118,3 +120,20 @@ class App(QWidget):
         if fileName:
             with open(fileName, 'w') as file:
                 file.write(self.output_textbox.toPlainText())
+
+    def set_up_ui_manager(self):
+        text = self.input_textbox.toPlainText()
+        # misclick condition
+        if text == '':
+            return
+
+        self.uiManager = UIManager(text)
+
+    def run_result(self):
+        text = self.input_textbox.toPlainText()
+        # misclick condition
+        if text == '':
+            return
+
+        self.uiManager.run_result(text)
+
