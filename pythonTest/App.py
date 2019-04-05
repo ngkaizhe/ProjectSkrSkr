@@ -113,7 +113,7 @@ class App(QWidget):
             self.input_textbox.setPlainText(read_data)
 
     def saveFileDialog(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", "",
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", "C://",
                                                   "Text Files (*.txt)")
         if fileName:
             with open(fileName, 'w') as file:
