@@ -16,10 +16,22 @@ def transpose(arr: Arrai) -> Arrai:
     return Arrai(ret)
 
 def to_RREF(arr: Arrai) -> Arrai: #(tuple(Arrai, Arrai))
-    return helpers.helper_RREF(arr)
+    return helpers.helper_RREF(arr)["A"]
 
 def inverse(arr: Arrai) -> Arrai:
-    return helpers.helper_RREF(arr, f_calculate_inverse = True)[1]
+    if not is_square(arr):
+        Explosion.INVERSE_NOT_SQUARE_ARRAI.bang()
+        return
+    ret = helpers.helper_RREF(arr, Arrai.identity((arr.length(), arr.length())));
+    if(ret["rank"] != arr.length()):
+        Explosion.INVERSE_NOT_EXIST.bang()
+        return 
+    else:
+        return ret["B"]
+
+def rank(arr: Arrai) -> Arrai:
+    return helpers.helper_RREF(arr)["rank"]
+
 
     # helper func for basic arithmetic operation, element-wise
 

@@ -1,7 +1,9 @@
+from decimal import Decimal
+
 # recursive function below
 def get_string(element: list, current_line: int, ndim: int, seperate_string: str, isFormal: bool) -> str:
     if isinstance(element, list) is False:
-        return str(element)
+        return str(round(Decimal(element),2) + 0)
 
     else:
         answer = '['
