@@ -17,7 +17,7 @@ class Arrai(object):
             and isinstance(object, float) is False):
                 Explosion.INIT_ARGUMENT_TYPE_ERROR.bang()
 
-        if len(object) == 0:
+        if isinstance(object, list) is True and len(object) == 0:
             Explosion.BLANK_ARRAY_PASS_IN.bang()
 
         self.ndim = 0 # Number of array dimensions.
