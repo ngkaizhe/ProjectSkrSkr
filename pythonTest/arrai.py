@@ -17,6 +17,9 @@ class Arrai(object):
             and isinstance(object, float) is False):
                 Explosion.INIT_ARGUMENT_TYPE_ERROR.bang()
 
+        if len(object) == 0:
+            Explosion.BLANK_ARRAY_PASS_IN.bang()
+
         self.ndim = 0 # Number of array dimensions.
         self.shape = 0
         self.set_array(object)
@@ -374,6 +377,7 @@ def swap_col(arr: Arrai, r1: int, r2: int) -> Arrai:
 
 
 class Explosion(Enum):
+    BLANK_ARRAY_PASS_IN = ValueError('Array requires to have something')
     INIT_ARGUMENT_TYPE_ERROR = TypeError("Argument must be of type list or numerical values(scalar)")
     INVALID_ARRAY_DIM = ValueError('Not a valid n * m array')
     INVALID_NUMERICAL_TYPE = ValueError("Element must be numerical values")
