@@ -251,6 +251,7 @@ class Arrai(object):
     # Reduced Row Echelon Form 
     # will return a tuple(RREF, INVERSE) if inverse calculation is enabled
     # otherwise only RREF(of type Arrai) is returned
+    # Just like Gaussian Jordan Elimination
 def to_RREF(arr: Arrai, f_calculate_inverse: bool = False) -> Arrai: #(tuple(Arrai, Arrai))
 
     if not isinstance(arr, Arrai):
@@ -270,16 +271,20 @@ def to_RREF(arr: Arrai, f_calculate_inverse: bool = False) -> Arrai: #(tuple(Arr
     ret = copy.deepcopy(arr)
 
     for r in range(row_count):
-        if(i_lead >= col_count): return ret
+        if(i_lead >= col_count): return ret # Return when there are all zeros left and no more operation are available
         i = r
-        while(ret[i][i_lead] == 0):
+        while(ret[i][i_lead] == 0): # Search for a non-zero element to swap its row with row r
             i += 1
-            if(i == row_count):
-                i = r
-                i_lead += 1
-                if(i_lead == col_count): return ret
+            if(i == row_count): # If it hit the bottom
+                i = r # Return to the starting position 
+                i_lead += 1 # And move right(in array) by one
+                if(i_lead == col_count): return ret # Return when there are all zeros left and no more operation are available
+        
+        # If it haven't returned yet, means a non-zero lead has been found
+        # Swap with the row the non-zero element is
         ret = swap_row(ret, i, r)
         if(f_calculate_inverse): ret_inv = swap_row(ret_inv, i, r)
+
 
         if(ret[r][i_lead] != 0): # Make the lead to be 1 by dividing whole row by lead itself
             lead = ret[r][i_lead]
@@ -292,6 +297,7 @@ def to_RREF(arr: Arrai, f_calculate_inverse: bool = False) -> Arrai: #(tuple(Arr
             ret = ret.set_row(i, ret.row(i) - ret.row(r) * lead)
             if(f_calculate_inverse): ret_inv = ret_inv.set_row(i, ret_inv.row(i) - ret_inv.row(r) * lead);
         i_lead += 1
+
     if(f_calculate_inverse): return (ret, ret_inv)
     else: return ret
 
@@ -307,7 +313,9 @@ def set_row(arr: Arrai, r: int, vec: Arrai) -> Arrai:
         return
 
     ret = copy.deepcopy(arr)
-    vec = to_row_vector(vec)
+    vec = to_row_vector(vec) # Convert the vector into row vector to aid with the operation
+
+    # Iterate throughout the row vector, concenate and assign
     ret.array[r] = [el for el in vec[0]]
     return ret
 
@@ -322,6 +330,8 @@ def set_col(arr: Arrai, c: int, vec: Arrai) -> Arrai:
 
     ret = copy.deepcopy(arr)
     vec = to_row_vector(vec)
+
+    # Iterate throughout the column vector and assign one by one
     for i in range(len(ret.array)):
         ret[i][c] = vec[0][i]
 
@@ -434,59 +444,59 @@ def basic_arithmetic(first: Arrai, second: Arrai, op: str):
 
 """
 Follow Matlab definition
-sum is reserved for python, thus zum is used
+sum is reserved by python for __+__, thus zum is used
 
+For Vector:
+return the summed value(scalar) of all element
+
+For Matrix:
 dim = 1: summation for all column vectors
 dim = 2: summation for all row vectors
 """
-def zum(first: Arrai, second: Arrai = None, dim = 1) -> Arrai:
+def zum(first: Arrai, dim = 1) -> Arrai:
 
-    if(second == None): 
-        second = Arrai.zeros(first.shape)
-
-    if (isinstance(first, Arrai) and isinstance(second, Arrai)) is False:
+    if not isinstance(first, Arrai):
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()
         return
 
-    elif(first.shape == second.shape):
-        ret = []
-        if(dim == 1):
-            for i in range(first.shape[1]):
-                total = 0
-                for j in range(first.shape[0]): # Sum through all column vectors
-                    total += first[j][i] + second[j][i] 
-                ret.append(total)
-        elif(dim == 2):
-            for i in range(first.shape[0]):
-                total = 0
-                for j in range(first.shape[1]): # Sum through all column vectors
-                    total += first[i][j] + second[i][j] 
-                ret.append([total])
-        return Arrai(ret)
-    else:
-        Explosion.SUM_SHAPE_MISMATCH.bang()
+    if(is_vector(first)): # Force sum into scalar if it is vector, as defined in matlab
+        first = to_row_vector(first)
+        dim = 2
+
+    ret = []
+    if(dim == 1):
+        for i in range(first.shape[1]):
+            total = 0
+            for j in range(first.shape[0]): # Sum through all column vectors
+                total += first[j][i]
+            ret.append(total)
+
+    elif(dim == 2):
+        for i in range(first.shape[0]):
+            total = 0
+            for j in range(first.shape[1]): # Sum through all row vectors
+                total += first[i][j]
+            ret.append([total])
+
+    return Arrai(ret)
 
 
 
 def dot(first: Arrai, second: Arrai, dim = 1) -> Arrai:
 
-    if (isinstance(first, Arrai) and isinstance(second, Arrai)) is False:
+    if not (isinstance(first, Arrai) and isinstance(second, Arrai)):
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()
         return
 
     elif(is_vector(first) and is_vector(second)):
-        if(first.shape[0] == 1 and first.shape[1] == second.shape[1]): # First is Row and Second is Row Vec
-            return first * transpose(second)
-        elif(first.shape[0] == 1 and first.shape[1] == second.shape[0]): # First is Row and Second is Col Vec
-            return first * second
-        elif(first.shape[1] == 1 and first.shape[0] == second.shape[0]): # First is Col and Second is Row Vec
-            return second * transpose(first)
-        elif(first.shape[1] == 1 and first.shape[0] == second.shape[1]): # First is Col and Second is Col Vec
-            return  second * first
+        if(first.length() == second.length()):
+            return to_row_vector(first) * to_col_vector(second) # row vector by col vector
+
         else: Explosion.DOT_SHAPE_MISMATCH.bang() # Vector size mismatched
 
     elif(first.shape == second.shape):
-        return zum(basic_arithmetic(first, second, '*'), dim = dim)
+        return zum(basic_arithmetic(first, second, '*'), dim)
+    
     else:
         Explosion.DOT_SHAPE_MISMATCH.bang()
 
@@ -526,7 +536,8 @@ def div(first: Arrai, second: Arrai) -> Arrai:
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()
         return
 
-    else:
+    else: # Matrix-Matrix Division
+        #TODO? Should the checking be left to multiplication?
         return first * inverse(second)
 
 
