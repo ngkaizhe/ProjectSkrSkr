@@ -1,0 +1,139 @@
+import copy
+
+from .arrai import *
+from .explosion import Explosion
+
+
+def reshape(arr: Arrai, shape: (tuple, list)) -> Arrai:
+    total = 1
+
+    # shape can only contain 2 elements inside
+    if len(shape) is not 2:
+        # TODO: return exception
+        return
+
+    shape_list = shape
+    # get the total value inside shape
+    for i in shape_list:
+        total *= i
+
+    if total is not arr.shape[0] * arr.shape[1]:
+        Explosion.RESHAPE_DIMSIZE_MISMATCHED.bang();
+        return
+    else:
+        # change the array of self to 1d first
+        one_dimension_array = combine_array(arr.array)
+
+        # then starts the reshape job
+        new_list = cut_array(one_dimension_array, shape_list, 0)
+
+        return Arrai(new_list)
+
+#Function to set row vector of index r of arr
+def set_row(arr: Arrai, r: int, vec: Arrai) -> Arrai:
+    if(r >= arr.shape[0]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[1]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    ret = copy.deepcopy(arr)
+    vec = to_row_vector(vec) # Convert the vector into row vector to aid with the operation
+
+    # Iterate throughout the row vector, concenate and assign
+    ret.array[r] = [el for el in vec[0]]
+    return ret
+
+# Function to set column vector of index c of arr
+def set_col(arr: Arrai, c: int, vec: Arrai) -> Arrai:
+    if(c >= arr.shape[1]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[0]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    ret = copy.deepcopy(arr)
+    vec = to_row_vector(vec)
+
+    # Iterate throughout the column vector and assign one by one
+    for i in range(len(ret.array)):
+        ret[i][c] = vec[0][i]
+
+    return ret
+
+# Function to convert vector to row vector
+def to_row_vector(vec: Arrai) -> Arrai:
+    if not is_vector(vec): 
+        Explosion.CONVERT_NOT_VECTOR.bang()
+    l = vec.length()
+    if vec.shape[0] == l: # Is col vector
+        return Arrai([i[0] for i in vec])
+    else: # Is row vector
+        return Arrai([i for i in vec[0]])
+
+def to_col_vector(vec: Arrai) -> Arrai:
+    if not is_vector(vec): 
+        Explosion.CONVERT_NOT_VECTOR.bang()
+    l = vec.length()
+    if vec.shape[0] == l: # Is col vector
+        return Arrai([[i[0]] for i in vec])
+    else: # Is row vector
+        return Arrai([[i] for i in vec[0]])
+
+
+# Return a new Arrai with swapped rows
+def swap_row(arr: Arrai, r1: int, r2: int) -> Arrai:
+    if r1 >= arr.shape[0] or r2 >= arr.shape[0]:
+        Explosion.SWAP_DIM_EXCEED.bang()
+        return
+
+    mat = copy.deepcopy(arr.array)
+    mat[r1], mat[r2] = mat[r2], mat[r1]
+    return Arrai(mat)
+
+# Return a new Arrai with swapped columns
+def swap_col(arr: Arrai, r1: int, r2: int) -> Arrai:
+    if r1 >= arr.shape[1] or r2 >= arr.shape[1]:
+        Explosion.SWAP_DIM_EXCEED.bang()
+        return
+
+    mat = copy.deepcopy(arr.array)
+    for i in range(len(mat)):
+        mat[i][r1], mat[i][r2] = mat[i][r2], mat[i][r1]
+    return Arrai(mat)
+
+
+
+def is_vector(object: Arrai) -> bool:
+    if(isinstance(object, Arrai)):
+        if(object.shape[0] == 1 or object.shape[1] == 1):
+            return True
+    return False
+
+
+# Check whether it is scalr or not. applicaple for both NumberTypes and Arrai
+def is_square(object: Arrai) -> bool:
+    if(isinstance(object, Arrai)):
+        if(object.shape[0] == object.shape[1]):
+            return True
+    return False 
+
+def is_scalar(object: Arrai) -> bool:
+    if(isinstance(object, NumberTypes)):
+        return True
+    elif(isinstance(object, Arrai)
+        and (object.shape[0] is 1) and (object.shape[1] is 1)):
+            return True
+    
+    return False
+
+# Return the scalar in numerical type if it is scalar
+def get_scalar(object) -> NumberTypes:
+    if(isinstance(object, NumberTypes)):
+        return object
+    elif(isinstance(object, Arrai) and is_scalar(object)):
+        return object[0][0]
+    
+    return None
