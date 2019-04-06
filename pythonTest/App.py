@@ -26,8 +26,7 @@ class App(QWidget):
         # set label
         self.setLabel()
 
-        # self.openFileNamesDialog()
-        # self.saveFileDialog()
+        self.uiManager = UIManager()
 
         self.initUI()
  
@@ -127,13 +126,14 @@ class App(QWidget):
         if text == '':
             return
 
-        self.uiManager = UIManager(text)
+        self.uiManager.set_arrais(text)
 
     def run_result(self):
-        text = self.input_textbox.toPlainText()
+        text = self.calculated_textbox.toPlainText()
         # misclick condition
         if text == '':
             return
 
-        self.uiManager.run_result(text)
+        answer = self.uiManager.run_result(text)
+        self.output_textbox.setPlainText(answer)
 
