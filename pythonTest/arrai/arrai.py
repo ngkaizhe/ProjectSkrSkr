@@ -223,6 +223,19 @@ class Arrai(object):
     def swap_col(self, r1: int, r2: int) -> 'Arrai':
         return swap_col(self, r1, r2)
 
+    """
+    Return the sub matrix
+    r1,r2,c1,c2 are inclusive
+    0 <= r1 <= r2 < shape[0], 0 <= c1 <= c2 < shape[1]
+    """
+    def partition(self, r1: int, r2: int, c1: int, c2: int) -> 'Arrai':
+        if not (r1 <= r2 and r2 < self.shape[0]) or not (c1 <= c2 and c2 < self.shape[1]):
+            Explosion.INVALID_ARRAY_DIM.boom()
+        
+        return Arrai([[self.array[i][j] for j in range(c1,c2+1)] for i in range(r1, r2+1)])
+
+
+
 from .explosion import *
 from .basic_operations import *
 from .basic_arithmetic import *

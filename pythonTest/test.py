@@ -62,5 +62,19 @@ if __name__ == "__main__":
 	a = Arrai([[1,2,3],[2,13,4],[3,4,7]])
 	print("Rank of a is %s", ar.rank(a))
 	print("Det of a is %s", ar.det(a))
+	b = a.partition(0,1,0,2)
+	print("B: %s" % b)
+
+	a = Arrai([[1,2,3],[4,5,6],[7,7,9]])
+	print("A: %s" % a)
+	print("Cofactor A: %s" % ar.cofactor(a))
+	print("Adjoint A: %s" % ar.adjoint(a))
+	print("Inverse(RREF) A: %s" % ar.inverse(a))
+	print("Inverse(Adjoint) A: %s" % (ar.adjoint(a) / ar.det(a)))
+
+
+
+
+
 
 

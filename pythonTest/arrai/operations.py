@@ -11,10 +11,33 @@ Concrete module for array's operation such as transpose, inverse, arithmetic, et
 
 """
 
+def cofactor(arr: Arrai) -> Arrai:
+    ret = copy.deepcopy(arr)
+
+    row_count = arr.shape[0]
+    col_count = arr.shape[1]
+
+    for i in range(row_count):
+        for j in range(col_count):
+            mat = []
+            for x in range(row_count):
+                if(x == i): continue
+                row = []
+                for y in range(col_count):
+                    if(y == j): continue
+                    row.append(arr[x][y])
+                mat.append(row)
+
+            ret[i][j] = (-1)**(i+j) * det(Arrai(mat))
+
+    return ret
+
+def adjoint(arr: Arrai) -> Arrai:
+    return transpose(cofactor(arr))
+
 
 def transpose(arr: Arrai) -> Arrai:
-    ret = [[row[i] for row in arr.array] for i in range(arr.shape[1])]
-    return Arrai(ret)
+    return Arrai([[row[i] for row in arr.array] for i in range(arr.shape[1])])
 
 def to_RREF(arr: Arrai) -> Arrai: #(tuple(Arrai, Arrai))
     return helpers.helper_RREF(arr)["A"]
