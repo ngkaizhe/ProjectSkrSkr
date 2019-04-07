@@ -46,6 +46,20 @@ For Matrix:
 dim = 1: summation for all column vectors
 dim = 2: summation for all row vectors
 """
+
+from math import sqrt
+def norm(arr: Arrai) -> NumberTypes:
+    if not isinstance(arr, Arrai):
+        Explosion.INVALID_ARITHMETIC_OPERAND.bang()
+        return
+
+    elif(is_vector(arr)):
+        return sqrt(to_scalar(dot(arr, arr)))
+    else:
+        Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
+        # TODO
+
+
 def zum(first: Arrai, dim = 1) -> Arrai:
 
     if not isinstance(first, Arrai):

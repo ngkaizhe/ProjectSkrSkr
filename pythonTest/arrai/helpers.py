@@ -27,7 +27,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
     i_lead = 0 # Index of column vector in matrix
     row_count = arr_A.shape[0]
-    col_count = arr_A.shape[1]
+    col_count_A = arr_A.shape[1]
 
     has_B = False
 
@@ -36,6 +36,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
             Explosion.RREF_ROWSIZE_MISMATCHED.bang()
             return
         else:
+            col_count_B = arr_B.shape[1]
             has_B = True
 
         ret_B = copy.deepcopy(arr_B)
@@ -46,7 +47,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
     for r in range(row_count):
 
-        if (i_lead >= col_count): break # Return when there are all zeros left and no more operation are available
+        if (i_lead >= col_count_A): break # Return when there are all zeros left and no more operation are available
 
         i = r
         while (ret_A[i][i_lead] == 0): # Search for a non-zero element to swap its row with row r
@@ -54,26 +55,43 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
             if(i == row_count): # If it hit the bottom
                 i = r # Return to the starting position 
                 i_lead += 1 # And move right(in array) by one
-                if(i_lead == col_count): break # Return when there are all zeros left and no more operation are available
+                if(i_lead == col_count_A): break # Return when there are all zeros left and no more operation are available
         
-        if(i_lead >= col_count): break
+        if(i_lead >= col_count_A): break
 
         # If it haven't returned yet, means a non-zero lead has been found
         # Swap with the row the non-zero element is
-        ret_A = swap_row(ret_A, i, r)
-        if(has_B): ret_B = swap_row(ret_B, i, r)
 
+        """
+        At below, all swap_row, set_row has been replaced with tranditional method
+        swap_row, set_row is much more expensive because they produce a new deep_copy of Arrai every call
+        In this case where the mutability is not required, so that modifying it directly is acceptable
+        But beware of other case where the mutability is required
+        """
+
+        # ret_A = swap_row(ret_A, i, r)
+        swap_ref(ret_A.array[i], ret_A.array[r])
+        if(has_B): 
+            # ret_B = swap_row(ret_B, i, r)
+            swap_ref(ret_B.array[i], ret_B.array[r])
 
         if(ret_A[r][i_lead] != 0): # Make the lead to be 1 by dividing whole row by lead itself
             lead = ret_A[r][i_lead]
-            ret_A = ret_A.set_row(r, ret_A.row(r) / lead);
-            if(has_B): ret_B = ret_B.set_row(r, ret_B.row(r) / lead);
+            # ret_A = ret_A.set_row(r, ret_A.row(r) / lead);
+            ret_A.array[r] = [el / lead for el in ret_A.array[r]]
+
+            if(has_B): 
+                # ret_B = ret_B.set_row(r, ret_B.row(r) / lead);
+                ret_B.array[r] = [el / lead for el in ret_B.array[r]]
 
         for i in range(row_count): # Elementary row operation to clean up columns
             if(i == r): continue
             lead = ret_A[i][i_lead]
-            ret_A = ret_A.set_row(i, ret_A.row(i) - ret_A.row(r) * lead)
-            if(has_B): ret_B = ret_B.set_row(i, ret_B.row(i) - ret_B.row(r) * lead);
+            # ret_A = ret_A.set_row(i, ret_A.row(i) - ret_A.row(r) * lead)
+            ret_A.array[i] = [ret_A.array[i][j] - ret_A.array[r][j] * lead for j in range(col_count_A)]
+            if(has_B): 
+                # ret_B = ret_B.set_row(i, ret_B.row(i) - ret_B.row(r) * lead);
+                ret_B.array[i] = [ret_B.array[i][j] - ret_B.array[r][j] * lead for j in range(col_count_B)]
 
         i_lead += 1
         rank += 1 
@@ -83,5 +101,14 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
     ret["A"] = ret_A
     ret["rank"] = rank
     return ret
+
+# Function used to swap object of reference type only
+# Not working for value type
+def swap_ref (obj1, obj2) -> None:
+    obj1, obj2 = obj2, obj1
+
+
+
+
 
 

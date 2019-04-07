@@ -7,7 +7,7 @@ def basic_arithmetic(first: Arrai, second: Arrai, op: str):
     scalar = None
 
     if  is_scalar(first) or is_scalar(second):
-        (scalar,arr) = (get_scalar(first),second) if is_scalar(first) else (get_scalar(second),first)
+        (scalar,arr) = (to_scalar(first),second) if is_scalar(first) else (to_scalar(second),first)
 
     elif not (isinstance(first, Arrai) and isinstance(second, Arrai)):
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()
@@ -25,7 +25,7 @@ def basic_arithmetic(first: Arrai, second: Arrai, op: str):
 
     if scalar is not None:
         if is_scalar(arr):
-            return Arrai(func_op(scalar, get_scalar(arr)))
+            return Arrai(func_op(scalar, to_scalar(arr)))
         else:
             for i in range(arr.shape[0]):
                 row = []

@@ -130,7 +130,7 @@ def is_scalar(object: Arrai) -> bool:
     return False
 
 # Return the scalar in numerical type if it is scalar
-def get_scalar(object) -> NumberTypes:
+def to_scalar(object) -> NumberTypes:
     if(isinstance(object, NumberTypes)):
         return object
     elif(isinstance(object, Arrai) and is_scalar(object)):

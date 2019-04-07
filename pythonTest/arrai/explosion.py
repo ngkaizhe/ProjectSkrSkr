@@ -27,6 +27,8 @@ class Explosion(Enum):
     INVERSE_NOT_EXIST = ValueError("Inverse not exist, matrix not invertible")
     RESHAPE_DIMSIZE_MISMATCHED = ValueError("Reshape must be of the same size as the original arrai")
     RREF_ROWSIZE_MISMATCHED = ValueError("Row size must be some inorder to performs RREF")
+    TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 
-    def bang(self):
+    def bang(self, msg = ""):
+        self.value.args = (self.value.args[0] +'\n' +msg,)
         raise self.value
