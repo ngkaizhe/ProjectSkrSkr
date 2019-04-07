@@ -43,7 +43,6 @@ class Arrai(object):
 
     # Operator overloading
     def __add__(self, other):
-        print(type(other))
         return basic_arithmetic(self, other, '+')
 
     def __radd__(self, other):
