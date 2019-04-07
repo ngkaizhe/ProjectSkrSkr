@@ -25,8 +25,10 @@ class Explosion(Enum):
     INVALID_ARGS_NOT_ARRAI = ValueError("Arguments must be arrai");
     INVERSE_NOT_SQUARE_ARRAI = ValueError("Matrix must be square inorder to find inverse")
     INVERSE_NOT_EXIST = ValueError("Inverse not exist, matrix not invertible")
+    DET_NOT_SQUARE_ARRAI = ValueError("Matrix must be square inorder to find determinant")
     RESHAPE_DIMSIZE_MISMATCHED = ValueError("Reshape must be of the same size as the original arrai")
     RREF_ROWSIZE_MISMATCHED = ValueError("Row size must be some inorder to performs RREF")
+
     TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 
     def bang(self, msg = ""):
