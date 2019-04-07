@@ -1,5 +1,42 @@
-from arrai import Arrai
+from arrai.arrai import Arrai as Arrai
+from arrai.basic_arithmetic import is_vector
 import re
+
+
+# helper functions
+def set_function_patterns() -> str:
+    answer = '^'
+    answer += '('
+
+    key_list_list = list(functions_map_list.keys())
+    key_list = []
+
+    # let key_list dont contain tuple or list inside
+    for keys in key_list_list:
+        if isinstance(keys, tuple) is True:
+            for key in keys:
+                key_list.append(key)
+        else:
+            key_list.append(keys)
+
+    isFirst = True
+    key_list = sorted(key_list, key=lambda element: len(element), reverse=True)
+    for key in key_list:
+        if isFirst:
+            answer += key
+            isFirst = False
+
+        else:
+            answer += '|' + key
+
+    answer += ')'
+    return answer
+
+def MyMul(first: Arrai, second: Arrai):
+    if is_vector(first) and is_vector(second):
+        return first * second.transpose()
+    else:
+        return first * second
 
 class Function(object):
 
@@ -8,30 +45,27 @@ class Function(object):
         self.function = function
         self.total_variables = total_variables
 
-    def get_result(self, *arguments):
-        if self.function:
-            return self.function(*arguments)
-
 # {
 # operator_string: [operator_TODO, precendence]
 # }
 operator_map_list = {
-    '+': [Function('add', float.__add__), 1],
-    '-': [Function('sub', float.__sub__), 1],
-    '*': [Function('mul', float.__mul__), 2],
+    '+': [Function('add', Arrai.__add__), 1],
+    '-': [Function('sub', Arrai.__sub__), 1],
+    '*': [Function('mul', MyMul), 2],
     '\\': [Function('div', float.__divmod__), 2],
 }
 
 functions_map_list = {
-    ('Norm', 'norm'): [Function('Norm|norm', None)],
-    ('Normal', 'normal'): [Function('Normal|normal', None)],
-    'Rank': [Function('Rank', None)],
+    ('Norm', 'norm'): [Function('Norm|norm', None, 1)],
+    ('Normal', 'normal'): [Function('Normal|normal', None, 1)],
+    'Rank': [Function('Rank', None, 1)],
 }
 
 class UIManager(object):
 
     def __init__(self):
         self.arrai_list: list
+        self.recycle_bin: list
         """
         map_list = {
             'Operator/Function': {
@@ -59,6 +93,8 @@ class UIManager(object):
 
     def set_arrais(self, text_string: str) -> None:
         self.arrai_list = []
+        self.recycle_bin = []
+
         text_string_list = text_string.splitlines()
 
         currentPos = 1
@@ -93,8 +129,11 @@ class UIManager(object):
         text_list = text_string.splitlines()
 
         for problem in text_list:
-            build_RPN(problem)
-            answer = self.calculate_RPN()
+            self.build_RPN(problem)
+            answer: Arrai = self.calculate_RPN()
+            answer_string = self.get_string(answer)
+
+            return answer_string
 
     def build_RPN(self, problem: str) -> None:
         if problem is None or problem == '':
@@ -256,48 +295,139 @@ class UIManager(object):
         # '(' has the highest precendence 10
         self.precendences.update({'(': 10})
 
-    def calculate_RPN(self) -> str:
-        pass
+    def calculate_RPN(self) -> Arrai:
+        # cut off some parenthesises, only remains parenthesis that followed by function type token
+        i = 0
+        while i < len(self.RPN):
+            if self.RPN[i][0] == ')':
+                if self.RPN[i+1][1] != 'Function':
+                    # find the corresponding left parenthesis position
+                    j = i
+                    while self.RPN[j][0] != '(' and j >= 0:
+                        j -= 1
 
-# helper functions
-def set_function_patterns() -> str:
-    answer = '^'
-    answer += '('
+                    self.RPN.pop(i)
+                    self.RPN.pop(j)
 
-    key_list_list = list(functions_map_list.keys())
-    key_list = []
+                    # 2 elements removed
+                    i -= 2
 
-    # let key_list dont contain tuple or list inside
-    for keys in key_list_list:
-        if isinstance(keys, tuple) is True:
-            for key in keys:
-                key_list.append(key)
+            i += 1
+
+        # replace variables type token to the proper value
+        # which is a = the first arrai, b = the second arrai etc...
+        length = len(self.RPN)
+        total = 0
+        for i in range(length):
+            if self.RPN[i][1] == 'Variable':
+                total += 1
+                temp_char = self.RPN[i][0]
+                pos = ord(temp_char) - ord('a')
+                self.RPN[i][0] = self.arrai_list[pos]
+                self.RPN[i][1] = 'Arrai'
+
+            elif self.RPN[i][1] == 'Number':
+                temp_number = float(self.RPN[i][0])
+                self.RPN[i][0] = Arrai(temp_number)
+                self.RPN[i][1] = 'Arrai'
+
+        # delete the value inside arrai_list as will not be used in future
+        self.recycle_bin.append(self.arrai_list[:total])
+        del self.arrai_list[:total]
+
+        # calculate the result
+        i = 0
+        while i < len(self.RPN):
+            # all operators only used 2 operand
+            if self.RPN[i][1] == 'Operator':
+                if i < 2:
+                    print('No operands in front of ' + self.RPN[i][0] + ' operator!')
+                    return None
+
+                operator_string = self.RPN[i][0]
+                funct = self.map_list['Operator'][operator_string][0].function
+                first = self.RPN[i-2][0]
+                second = self.RPN[i-1][0]
+                temp_arrai = funct(first, second)
+
+                self.RPN[i][0] = temp_arrai
+                self.RPN[i][1] = 'Arrai'
+                del self.RPN[i-2:i]
+                i -= 2
+
+            elif self.RPN[i][1] == 'Function':
+                pass
+
+            i += 1
+
+        if self.RPN[0]:
+            return self.RPN[0][0]
         else:
-            key_list.append(keys)
+            return None
 
-    isFirst = True
-    key_list = sorted(key_list, key=lambda element: len(element), reverse=True)
-    for key in key_list:
-        if isFirst:
-            answer += key
-            isFirst = False
+    def get_string(self, arrai: Arrai)->str:
+        answer_string = ''
+        for i in arrai.array:
+            if i is not None:
+                for j in i:
+                    answer_string += str(j) + '\t'
 
-        else:
-            answer += '|' + key
+                answer_string = answer_string[:-1]
+                answer_string += '\n'
 
-    answer += ')'
-    return answer
-
+        return answer_string
 
 if __name__ == '__main__':
     uimanager = UIManager()
-    # uimanager.build_RPN('normal(norm(1+a+b*c))')
-    # uimanager.build_RPN('normal(a, b)')
-    # uimanager.build_RPN('A + B * C + D')
-    # uimanager.build_RPN('(A + B) * (C + D)')
-    # uimanager.build_RPN('A * B + C * D')
-    # uimanager.build_RPN('A + B + C + D')
-    uimanager.build_RPN('10 + 3 * 5 \ (16 - 4)')
-    uimanager.build_RPN('( A + B ) * C - ( D - E ) * ( F + G )')
 
-    a = 1
+    # V1.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V1.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('a+b+c+d'))
+    answers.append(uimanager.run_result('(a+b)*c*d'))
+    answers.append(uimanager.run_result('(a+b+c+d+e)*f'))
+    for i in answers:
+        print(i)
+
+    # V2.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('a*b'))
+    for i in answers:
+        print(i)
+
+    # V3.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V3.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('a+b'))
+    answers.append(uimanager.run_result('a+b'))
+    answers.append(uimanager.run_result('a+b'))
+    for i in answers:
+        print(i)
+
+    # V4.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V4.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('a*b'))
+    for i in answers:
+        print(i)

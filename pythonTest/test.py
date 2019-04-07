@@ -1,5 +1,6 @@
 from arrai import Arrai
 import arrai as ar
+
 if __name__ == "__main__":
 	a = Arrai([[100000000,2,3,4,5],[3,4,7,1,2],[2,1,3,3,4],[3,4,7,1,2],[1,2,3,4,5]])
 	b = Arrai([[6], [5], [4],[3],[2]])
