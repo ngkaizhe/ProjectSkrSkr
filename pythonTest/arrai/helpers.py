@@ -44,6 +44,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
     ret_A = copy.deepcopy(arr_A)
 
     rank = 0
+    det = 1
 
     for r in range(row_count):
 
@@ -69,20 +70,24 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
         But beware of other case where the mutability is required
         """
 
-        # ret_A = swap_row(ret_A, i, r)
-        swap_ref(ret_A.array[i], ret_A.array[r])
-        if(has_B): 
-            # ret_B = swap_row(ret_B, i, r)
-            swap_ref(ret_B.array[i], ret_B.array[r])
+        if i is not r:
+            det *= -1
+            # ret_A = swap_row(ret_A, i, r)
+            ret_A.array[i], ret_A.array[r] = ret_A.array[r], ret_A.array[i]
+            if(has_B): 
+                # ret_B = swap_row(ret_B, i, r)
+                ret_A.array[i], ret_A.array[r] = ret_A.array[r], ret_A.array[i]
 
         if(ret_A[r][i_lead] != 0): # Make the lead to be 1 by dividing whole row by lead itself
             lead = ret_A[r][i_lead]
+            det *= lead
             # ret_A = ret_A.set_row(r, ret_A.row(r) / lead);
             ret_A.array[r] = [el / lead for el in ret_A.array[r]]
 
             if(has_B): 
                 # ret_B = ret_B.set_row(r, ret_B.row(r) / lead);
                 ret_B.array[r] = [el / lead for el in ret_B.array[r]]
+
 
         for i in range(row_count): # Elementary row operation to clean up columns
             if(i == r): continue
@@ -100,13 +105,8 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
     if(has_B): ret["B"] = ret_B
     ret["A"] = ret_A
     ret["rank"] = rank
+    ret["det"] = det if (rank == row_count and is_square(arr_A)) else 0
     return ret
-
-# Function used to swap object of reference type only
-# Not working for value type
-def swap_ref (obj1, obj2) -> None:
-    obj1, obj2 = obj2, obj1
-
 
 
 

@@ -11,6 +11,7 @@ Concrete module for array's operation such as transpose, inverse, arithmetic, et
 
 """
 
+
 def transpose(arr: Arrai) -> Arrai:
     ret = [[row[i] for row in arr.array] for i in range(arr.shape[1])]
     return Arrai(ret)
@@ -29,8 +30,14 @@ def inverse(arr: Arrai) -> Arrai:
     else:
         return ret["B"]
 
-def rank(arr: Arrai) -> Arrai:
+def rank(arr: Arrai) -> NumberTypes:
     return helpers.helper_RREF(arr)["rank"]
+
+def det(arr: Arrai) -> NumberTypes:
+    if not is_square(arr):
+        Explosion.DET_NOT_SQUARE_ARRAI.bang()
+        return
+    return helpers.helper_RREF(arr)["det"]
 
 
     # helper func for basic arithmetic operation, element-wise
@@ -58,6 +65,19 @@ def norm(arr: Arrai) -> NumberTypes:
     else:
         Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
         # TODO
+
+def normalize(arr: Arrai) -> Arrai:
+    if not isinstance(arr, Arrai):
+        Explosion.INVALID_ARITHMETIC_OPERAND.bang()
+        return
+
+    elif(is_vector(arr)):
+        return arr / norm(arr)
+    else:
+        Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
+        # TODO
+
+
 
 
 def zum(first: Arrai, dim = 1) -> Arrai:
