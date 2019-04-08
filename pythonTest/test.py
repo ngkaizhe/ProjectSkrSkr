@@ -1,5 +1,5 @@
-from .arrai import Arrai
-import operations as ar
+from arrai.arrai import Arrai
+import arrai.operations as ar
 
 if __name__ == "__main__":
 	if False:
@@ -74,10 +74,20 @@ if __name__ == "__main__":
 		print("Inverse(RREF) A: %s" % ar.inverse(a))
 		print("Inverse(Adjoint) A: %s" % (ar.adjoint(a) / ar.det(a)))
 
-	
+		# cross product
+		print(ar.cross_product(Arrai([26, 14, 62]), Arrai([-75, 17, -62])))
+		print(ar.cross_product(Arrai([-30, 35, 35]), Arrai([97, -24, -38])))
+		print(ar.cross_product(Arrai([82, -44, -53]), Arrai([70, -1, 74])))
 
+		# component
+		print(ar.component(Arrai([1, 85, -99]), Arrai([-92, 59, 16])))
 
+		#projection
+		print(ar.projection(Arrai([0, 0, 1]), Arrai([0, 0, 1])))
 
+	# triangle area
+	print(ar.triangle_area(Arrai([1, 2, 3]), Arrai([1, -3, -5])))
+	print(ar.triangle_area(Arrai([1, 4, 2]), Arrai([2, 6, 6])))
 
 
 
