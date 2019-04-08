@@ -1,5 +1,5 @@
-from arrai.arrai import Arrai as Arrai
-from arrai.basic_arithmetic import is_vector
+from arrai.arrai import Arrai
+from arrai.basic_operations import is_vector
 import re
 
 
@@ -78,6 +78,10 @@ functions_map_list = {
     ('Norm', 'norm'): [Function('Norm|norm', Arrai.norm, 1), 3],
     ('Normal', 'normal'): [Function('Normal|normal', Arrai.normal, 1), 3],
     'Rank': [Function('Rank', None, 1), 3],
+    ('Cross', 'cross'): [Function('Cross|cross', Arrai.cross_product, 2), 3],
+    ('Com', 'com'): [Function('Com|com', Arrai.component, 2), 3],
+    ('Proj', 'proj'): [Function('Proj|proj', Arrai.projection, 2), 3],
+    ('Area', 'area'): [Function('Area|area', Arrai.triangle_area, 2), 3],
 }
 
 class UIManager(object):
@@ -420,7 +424,8 @@ class UIManager(object):
                     print('Total Function Variables Needed not same as input variables!')
 
                 else:
-                    temp_answer = function_type.run_function(temp_variables)
+                    # remember to pass in the reversed variables
+                    temp_answer = function_type.run_function(temp_variables[::-1])
 
                 #replace the current RPN[i][0] with temp_answer
                 self.RPN[i][0] = temp_answer
@@ -458,7 +463,7 @@ class UIManager(object):
 if __name__ == '__main__':
     uimanager = UIManager()
 
-    print_answer = [0, 0, 0, 0, 1, 1]
+    print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     all_answers = []
 
     # V1.txt
@@ -561,4 +566,70 @@ if __name__ == '__main__':
         for i in answers:
             print(i)
 
+        print('\n')
+
+    # V7.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V7.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('cross(a,b)'))
+    answers.append(uimanager.run_result('Cross(a,b)'))
+    answers.append(uimanager.run_result('Cross(a,b)'))
+    all_answers.append(answers)
+    if print_answer[6]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V8.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V8.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('com(a,b)'))
+    answers.append(uimanager.run_result('Com(a,b)'))
+    answers.append(uimanager.run_result('Com(a,b)'))
+    all_answers.append(answers)
+    if print_answer[7]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V9.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V9.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('proj(a,b)'))
+    answers.append(uimanager.run_result('Proj(a,b)'))
+    answers.append(uimanager.run_result('Proj(a,b)'))
+    answers.append(uimanager.run_result('proj(a,b)'))
+    all_answers.append(answers)
+    if print_answer[8]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V10.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V10.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('area(a,b)'))
+    answers.append(uimanager.run_result('Area(a,b)'))
+    answers.append(uimanager.run_result('Area(a,b)'))
+    answers.append(uimanager.run_result('area(a,b)'))
+    all_answers.append(answers)
+    if print_answer[9]:
+        for i in answers:
+            print(i)
         print('\n')

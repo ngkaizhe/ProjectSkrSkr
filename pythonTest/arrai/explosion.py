@@ -28,6 +28,11 @@ class Explosion(Enum):
     DET_NOT_SQUARE_ARRAI = ValueError("Matrix must be square inorder to find determinant")
     RESHAPE_DIMSIZE_MISMATCHED = ValueError("Reshape must be of the same size as the original arrai")
     RREF_ROWSIZE_MISMATCHED = ValueError("Row size must be some inorder to performs RREF")
+    CROSS_PRODUCT_NOT_VECTOR = ValueError('Only vector could perform cross product')
+    CROSS_PRODUCT_VECTOR_NOT_THREE_DIMENSION = ValueError('I only know how to perform cross product of vectors with 3 elements inside')
+    COMPONENT_NOT_VECTOR = ValueError('I only know how to perform component using vectors')
+    PROJECTION_NOT_VECTOR = ValueError('I only know how to perform projection using vectors')
+    TRIANGLE_AREA_NOT_VECTOR = ValueError('I only know how to perform triangle area using vectors')
 
     TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 

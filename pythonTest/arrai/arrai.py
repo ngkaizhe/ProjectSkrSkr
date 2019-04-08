@@ -121,6 +121,22 @@ class Arrai(object):
         return normalize(first)
 
     @classmethod
+    def cross_product(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
+        return cross_product(first, second)
+
+    @classmethod
+    def component(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
+        return component(first, second)
+
+    @classmethod
+    def projection(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
+        return projection(first, second)
+
+    @classmethod
+    def triangle_area(cls, first: 'Arrai', second: 'Arrai') -> NumberTypes:
+        return triangle_area(first, second)
+
+    @classmethod
     def arange(cls, total: int):
         new_list = []
         for i in range(total):
@@ -241,7 +257,6 @@ class Arrai(object):
         return Arrai([[self.array[i][j] for j in range(c1,c2+1)] for i in range(r1, r2+1)])
 
 
-from .explosion import *
 from .basic_operations import *
 from .basic_arithmetic import *
 from .operations import *

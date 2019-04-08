@@ -1,5 +1,3 @@
-import copy
-
 from .arrai import *
 from .explosion import Explosion
 from . import helpers as helpers
@@ -181,3 +179,53 @@ def div(first: Arrai, second: Arrai) -> Arrai:
     else: # Matrix-Matrix Division
         #TODO? Should the checking be left to multiplication?
         return first * inverse(second)
+
+def cross_product(a: Arrai, b: Arrai) -> Arrai:
+    if is_vector(a) and is_vector(b):
+        if a.shape[1] == 3 and b.shape[1] == 3:
+            temp_vector = []
+            a1 = a[0][0]
+            a2 = a[0][1]
+            a3 = a[0][2]
+            b1 = b[0][0]
+            b2 = b[0][1]
+            b3 = b[0][2]
+            temp_vector.append(a2*b3 - a3*b2)
+            temp_vector.append(-(a1*b3 - a3*b1))
+            temp_vector.append(a1*b2 - a2*b1)
+            return Arrai(temp_vector)
+
+        else:
+            Explosion.CROSS_PRODUCT_VECTOR_NOT_THREE_DIMENSION.bang()
+
+    else:
+        Explosion.CROSS_PRODUCT_NOT_VECTOR.bang()
+        return None
+
+def component(a: Arrai, b: Arrai) -> Arrai:
+    if is_vector(a) and is_vector(b):
+        b = normalize(b)
+        return dot(a, b)
+
+    else:
+        Explosion.COMPONENT_NOT_VECTOR.bang()
+        return None
+
+def projection(a: Arrai, b: Arrai) -> Arrai:
+    if is_vector(a) and is_vector(b):
+        com = component(a, b)
+        b = normalize(b)
+        return com * b
+
+    else:
+        Explosion.COMPONENT_NOT_VECTOR.bang()
+        return None
+
+def triangle_area(a: Arrai, b: Arrai) -> NumberTypes:
+    if is_vector(a) and is_vector(b):
+        cross = cross_product(a, b)
+        return 0.5 * norm(cross)
+
+    else:
+        Explosion.TRIANGLE_AREA_NOT_VECTOR.bang()
+        return None
