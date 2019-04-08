@@ -35,7 +35,6 @@ def cofactor(arr: Arrai) -> Arrai:
 def adjoint(arr: Arrai) -> Arrai:
     return transpose(cofactor(arr))
 
-
 def transpose(arr: Arrai) -> Arrai:
     return Arrai([[row[i] for row in arr.array] for i in range(arr.shape[1])])
 
@@ -100,9 +99,6 @@ def normalize(arr: Arrai) -> Arrai:
         Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
         # TODO
 
-
-
-
 def zum(first: Arrai, dim = 1) -> Arrai:
 
     if not isinstance(first, Arrai):
@@ -130,8 +126,6 @@ def zum(first: Arrai, dim = 1) -> Arrai:
 
     return Arrai(ret)
 
-
-
 def dot(first: Arrai, second: Arrai, dim = 1) -> Arrai:
 
     if not (isinstance(first, Arrai) and isinstance(second, Arrai)):
@@ -149,8 +143,6 @@ def dot(first: Arrai, second: Arrai, dim = 1) -> Arrai:
     
     else:
         Explosion.DOT_SHAPE_MISMATCH.bang()
-
-
 
 def mul(first: Arrai, second: Arrai) -> Arrai:
 
@@ -177,7 +169,6 @@ def mul(first: Arrai, second: Arrai) -> Arrai:
 
     else:
         Explosion.DOT_DIM_MISMATCH.bang()
-
 
 def div(first: Arrai, second: Arrai) -> Arrai:
     if is_scalar(second):

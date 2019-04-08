@@ -82,7 +82,6 @@ def to_col_vector(vec: Arrai) -> Arrai:
     else: # Is row vector
         return Arrai([[i] for i in vec[0]])
 
-
 # Return a new Arrai with swapped rows
 def swap_row(arr: Arrai, r1: int, r2: int) -> Arrai:
     if r1 >= arr.shape[0] or r2 >= arr.shape[0]:
@@ -104,14 +103,11 @@ def swap_col(arr: Arrai, r1: int, r2: int) -> Arrai:
         mat[i][r1], mat[i][r2] = mat[i][r2], mat[i][r1]
     return Arrai(mat)
 
-
-
 def is_vector(object: Arrai) -> bool:
     if(isinstance(object, Arrai)):
         if(object.shape[0] == 1 or object.shape[1] == 1):
             return True
     return False
-
 
 # Check whether it is scalr or not. applicaple for both NumberTypes and Arrai
 def is_square(object: Arrai) -> bool:

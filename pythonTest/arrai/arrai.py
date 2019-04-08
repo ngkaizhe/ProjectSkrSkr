@@ -113,6 +113,14 @@ class Arrai(object):
             pass
 
     @classmethod
+    def norm(cls, first: 'Arrai') -> NumberTypes:
+        return norm(first)
+
+    @classmethod
+    def normal(cls, first: 'Arrai') -> 'Arrai':
+        return normalize(first)
+
+    @classmethod
     def arange(cls, total: int):
         new_list = []
         for i in range(total):
@@ -196,7 +204,6 @@ class Arrai(object):
     def transpose(self) -> 'Arrai':
         return transpose(self)
 
-
     def row(self, index: int) -> 'Arrai':
         return Arrai(self.array[index])
 
@@ -213,7 +220,7 @@ class Arrai(object):
     def set_row(self, r: int, vec: 'Arrai') -> 'Arrai':
         return set_row(self, r, vec)
 
-    def set_col(self, r: int, vec: 'Arrai') -> 'Arrai':
+    def set_col(self, c: int, vec: 'Arrai') -> 'Arrai':
         return set_col(self, c, vec)
 
     def swap_row(self, r1: int, r2: int) -> 'Arrai':
@@ -234,23 +241,8 @@ class Arrai(object):
         return Arrai([[self.array[i][j] for j in range(c1,c2+1)] for i in range(r1, r2+1)])
 
 
-
 from .explosion import *
 from .basic_operations import *
 from .basic_arithmetic import *
 from .operations import *
-
-
-
-if __name__ == "__main__":
-    mat = Arrai([[1, 10, 5, 7], [8, 7, 10, 11]])
-    mat2 = Arrai([1, 5, 4, 6, 7, 3, 6, 4, 2, 2, -1, 1])
-    mat4 = Arrai.arange(8)
-
-    temp = mat.reshape((4, 2))
-    temp2 = mat4.reshape((4, 2))
-
-    print(temp)
-    print(temp2)
-    print(temp+1)
 
