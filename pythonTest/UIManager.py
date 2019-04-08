@@ -40,25 +40,44 @@ def MyMul(first: Arrai, second: Arrai):
 
 class Function(object):
 
-    def __init__(self, name: str, function=None, total_variables=None):
+    def __init__(self, name: str, function=None, total_variables=0):
         self.name = name
         self.function = function
         self.total_variables = total_variables
+
+    def run_function(self, variables: list):
+        if self.total_variables == 1:
+            temp_answer = self.function(variables[0])
+
+        elif self.total_variables == 2:
+            temp_answer = self.function(variables[0], variables[1])
+
+        elif self.total_variables == 3:
+            temp_answer = self.function(variables[0], variables[1], variables[2])
+
+        else:
+            # TODO: if the function needs too much variables, considered pass in list
+            pass
+
+        return temp_answer
 
 # {
 # operator_string: [operator_TODO, precendence]
 # }
 operator_map_list = {
-    '+': [Function('add', Arrai.__add__), 1],
-    '-': [Function('sub', Arrai.__sub__), 1],
-    '*': [Function('mul', MyMul), 2],
-    '\\': [Function('div', float.__divmod__), 2],
+    '+': [Function('add', Arrai.__add__, 2), 1],
+    '-': [Function('sub', Arrai.__sub__, 2), 1],
+    '*': [Function('mul', MyMul, 2), 2],
+    '\\': [Function('div', float.__divmod__, 2), 2],
 }
 
+# {
+# operator_string: [function_TODO, precendence]
+# }
 functions_map_list = {
-    ('Norm', 'norm'): [Function('Norm|norm', None, 1)],
-    ('Normal', 'normal'): [Function('Normal|normal', None, 1)],
-    'Rank': [Function('Rank', None, 1)],
+    ('Norm', 'norm'): [Function('Norm|norm', Arrai.norm, 1), 3],
+    ('Normal', 'normal'): [Function('Normal|normal', Arrai.normal, 1), 3],
+    'Rank': [Function('Rank', None, 1), 3],
 }
 
 class UIManager(object):
@@ -273,10 +292,20 @@ class UIManager(object):
         return problem_pieces
 
     def set_map_list(self) -> None:
-        self.map_list = {
-            'Operator': operator_map_list,
-            'Function': functions_map_list,
-        }
+        # initialize
+        self.map_list = {}
+
+        self.map_list['Operator'] = operator_map_list
+
+        self.map_list['Function'] = {}
+
+        for key in functions_map_list.keys():
+            if isinstance(key, tuple):
+                for single_key in key:
+                    self.map_list['Function'][single_key] = functions_map_list[key]
+
+            else:
+                self.map_list['Function'][key] = functions_map_list[key]
 
     def set_precendences(self) -> None:
         self.precendences = {}
@@ -308,10 +337,8 @@ class UIManager(object):
 
                     self.RPN.pop(i)
                     self.RPN.pop(j)
-
                     # 2 elements removed
                     i -= 2
-
             i += 1
 
         # replace variables type token to the proper value
@@ -335,6 +362,8 @@ class UIManager(object):
         self.recycle_bin.append(self.arrai_list[:total])
         del self.arrai_list[:total]
 
+        # As all variables or number has been replace as Arrai, now the type
+        # inside self.RPN should only be Arrai, Function, Operator
         # calculate the result
         i = 0
         while i < len(self.RPN):
@@ -356,29 +385,81 @@ class UIManager(object):
                 i -= 2
 
             elif self.RPN[i][1] == 'Function':
-                pass
+                """
+                if function detected, it will fine the variables inside the RPN with using bracket!
+                if the total variables isn't same with the total parameters the function needed, will throw exception
+                """
+                # get function
+                function_string = self.RPN[i][0]
+                function_type = self.map_list['Function'][function_string][0]
+
+                # check the token before function was ')'
+                if self.RPN[i-1][0] != ')' or i-1 < 0:
+                    print('Function must followed before () bracket!')
+
+                # get variables needed
+                j = i-1
+                left_bracket_found = False
+                temp_variables = []
+                temp_answer = None
+
+                while j >= 0:
+                    if self.RPN[j][0] == '(':
+                        left_bracket_found = True
+                        break
+
+                    elif self.RPN[j][1] == 'Arrai':
+                        temp_variables.append(self.RPN[j][0])
+
+                    j -= 1
+
+                if left_bracket_found is False:
+                    print('Function must followed before () bracket!')
+
+                if len(temp_variables) != function_type.total_variables:
+                    print('Total Function Variables Needed not same as input variables!')
+
+                else:
+                    temp_answer = function_type.run_function(temp_variables)
+
+                #replace the current RPN[i][0] with temp_answer
+                self.RPN[i][0] = temp_answer
+                self.RPN[i][1] = 'Arrai'
+
+                del self.RPN[j:i]
+                i -= (i-j+1)
 
             i += 1
+
+        # As recycle_bin only for debugging purpose, clear it after every single line problem!
+        self.recycle_bin = []
 
         if self.RPN[0]:
             return self.RPN[0][0]
         else:
             return None
 
-    def get_string(self, arrai: Arrai)->str:
+    def get_string(self, arrai: (Arrai, int, float))->str:
         answer_string = ''
-        for i in arrai.array:
-            if i is not None:
-                for j in i:
-                    answer_string += str(j) + '\t'
+        if isinstance(arrai, Arrai):
+            for i in arrai.array:
+                if i is not None:
+                    for j in i:
+                        answer_string += str(j) + '\t'
 
-                answer_string = answer_string[:-1]
-                answer_string += '\n'
+                    answer_string = answer_string[:-1]
+                    answer_string += '\n'
+        elif isinstance(arrai, (int, float)):
+            answer_string += str(arrai)
 
         return answer_string
 
+
 if __name__ == '__main__':
     uimanager = UIManager()
+
+    print_answer = [0, 0, 0, 0, 1, 1]
+    all_answers = []
 
     # V1.txt
     filename = 'C:\\Users\\User\\Desktop\\Vector\\V1.txt'
@@ -390,8 +471,12 @@ if __name__ == '__main__':
     answers.append(uimanager.run_result('a+b+c+d'))
     answers.append(uimanager.run_result('(a+b)*c*d'))
     answers.append(uimanager.run_result('(a+b+c+d+e)*f'))
-    for i in answers:
-        print(i)
+    all_answers.append(answers)
+    if print_answer[0]:
+        for i in answers:
+            print(i)
+
+        print('\n')
 
     # V2.txt
     filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
@@ -403,8 +488,12 @@ if __name__ == '__main__':
     answers.append(uimanager.run_result('a*b'))
     answers.append(uimanager.run_result('a*b'))
     answers.append(uimanager.run_result('a*b'))
-    for i in answers:
-        print(i)
+    all_answers.append(answers)
+    if print_answer[1]:
+        for i in answers:
+            print(i)
+
+        print('\n')
 
     # V3.txt
     filename = 'C:\\Users\\User\\Desktop\\Vector\\V3.txt'
@@ -416,8 +505,12 @@ if __name__ == '__main__':
     answers.append(uimanager.run_result('a+b'))
     answers.append(uimanager.run_result('a+b'))
     answers.append(uimanager.run_result('a+b'))
-    for i in answers:
-        print(i)
+    all_answers.append(answers)
+    if print_answer[2]:
+        for i in answers:
+            print(i)
+
+        print('\n')
 
     # V4.txt
     filename = 'C:\\Users\\User\\Desktop\\Vector\\V4.txt'
@@ -429,5 +522,43 @@ if __name__ == '__main__':
     answers.append(uimanager.run_result('a*b'))
     answers.append(uimanager.run_result('a*b'))
     answers.append(uimanager.run_result('a*b'))
-    for i in answers:
-        print(i)
+    all_answers.append(answers)
+    if print_answer[3]:
+        for i in answers:
+            print(i)
+
+        print('\n')
+
+    # V5.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V5.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('norm(a)'))
+    answers.append(uimanager.run_result('Norm(a)'))
+    answers.append(uimanager.run_result('norm(a)'))
+    all_answers.append(answers)
+    if print_answer[4]:
+        for i in answers:
+            print(i)
+
+        print('\n')
+
+    # V6.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V6.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('normal(a)'))
+    answers.append(uimanager.run_result('Normal(a)'))
+    answers.append(uimanager.run_result('normal(a)'))
+    all_answers.append(answers)
+    if print_answer[5]:
+        for i in answers:
+            print(i)
+
+        print('\n')
