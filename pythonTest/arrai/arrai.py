@@ -137,6 +137,30 @@ class Arrai(object):
         return triangle_area(first, second)
 
     @classmethod
+    def is_parallel(cls, first: 'Arrai', second: 'Arrai') -> bool:
+        return is_parallel(first, second)
+
+    @classmethod
+    def is_orthogonal(cls, first: 'Arrai', second: 'Arrai') -> bool:
+        return is_orthogonal(first, second)
+
+    @classmethod
+    def angle_degree(cls, first: 'Arrai', second: 'Arrai') -> NumberTypes:
+        return angle_degree(first, second)
+
+    @classmethod
+    def plane_normal(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
+        return plane_normal(first, second)
+
+    @classmethod
+    def is_linear_independent(cls, first: list) -> bool:
+        return is_linear_independent(first)
+
+    @classmethod
+    def Gram_Schmidt_Orthogonalization(cls, first: list) -> 'Arrai':
+        return Gram_Schmidt_Orthogonalization(first)
+
+    @classmethod
     def arange(cls, total: int):
         new_list = []
         for i in range(total):

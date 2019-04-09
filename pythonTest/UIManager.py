@@ -40,7 +40,7 @@ def MyMul(first: Arrai, second: Arrai):
 
 class Function(object):
 
-    def __init__(self, name: str, function=None, total_variables=0):
+    def __init__(self, name: str, function=None, total_variables: (int, str) = 0):
         self.name = name
         self.function = function
         self.total_variables = total_variables
@@ -54,6 +54,9 @@ class Function(object):
 
         elif self.total_variables == 3:
             temp_answer = self.function(variables[0], variables[1], variables[2])
+
+        elif self.total_variables == 'list':
+            temp_answer = self.function(variables)
 
         else:
             # TODO: if the function needs too much variables, considered pass in list
@@ -82,6 +85,12 @@ functions_map_list = {
     ('Com', 'com'): [Function('Com|com', Arrai.component, 2), 3],
     ('Proj', 'proj'): [Function('Proj|proj', Arrai.projection, 2), 3],
     ('Area', 'area'): [Function('Area|area', Arrai.triangle_area, 2), 3],
+    ('isParallel', 'IsParallel'): [Function('isParallel|IsParallel', Arrai.is_parallel, 2), 3],
+    ('isOrthogonal', 'IsOrthogonal'): [Function('isOrthogonal|IsOrthogonal', Arrai.is_orthogonal, 2), 3],
+    ('angle', 'Angle'): [Function('angle|Angle', Arrai.angle_degree, 2), 3],
+    ('PN', 'pN'): [Function('PN|pN', Arrai.plane_normal, 2), 3],
+    ('IsLI', 'isLI'): [Function('isLI|IsLI', Arrai.is_linear_independent, 'list'), 3],
+    ('ob', 'Ob'): [Function('ob|Ob', Arrai.Gram_Schmidt_Orthogonalization, 'list'), 3],
 }
 
 class UIManager(object):
@@ -132,7 +141,7 @@ class UIManager(object):
                 temp_list = text_string_list[currentPos].split(maxsplit=total)
                 currentPos += 1
 
-                temp_list = list(map(int, temp_list))
+                temp_list = list(map(float, temp_list))
                 self.arrai_list.append(Arrai(temp_list))
 
             elif VectorOrMatrix == 'M':
@@ -143,7 +152,7 @@ class UIManager(object):
                 for r in range(rows):
                     temp_list = text_string_list[currentPos].split(maxsplit=cols)
                     currentPos += 1
-                    temp_list = list(map(int, temp_list))
+                    temp_list = list(map(float, temp_list))
                     arrai.append(temp_list)
 
                 self.arrai_list.append(Arrai(arrai))
@@ -388,6 +397,32 @@ class UIManager(object):
                 del self.RPN[i-2:i]
                 i -= 2
 
+            # special case for linear independent judgement!!!
+            # fucking trash input mode
+            elif self.RPN[i][1] == 'Function' and (self.RPN[i][0] == 'isLI' or self.RPN[i][0] == 'IsLI' or self.RPN[i][0] == 'Ob' or self.RPN[i][0] == 'ob'):
+                function_string = self.RPN[i][0]
+                function_type = self.map_list['Function'][function_string][0]
+
+                # get var[0] to temp_variables
+                temp_variables = []
+                temp_variables.append(self.RPN[i-2][0])
+
+                j = 1
+                while j < len(temp_variables[0][0]):
+                    temp_variables.append(self.arrai_list[0])
+                    self.recycle_bin.append(self.arrai_list[0])
+                    del self.arrai_list[0]
+                    j += 1
+
+                temp_answer = function_type.run_function(temp_variables)
+
+                # replace the current RPN[i][0] with temp_answer
+                self.RPN[i][0] = temp_answer
+                self.RPN[i][1] = 'Arrai'
+                del self.RPN[i - 3:i]
+                i -= 3
+
+
             elif self.RPN[i][1] == 'Function':
                 """
                 if function detected, it will fine the variables inside the RPN with using bracket!
@@ -427,7 +462,7 @@ class UIManager(object):
                     # remember to pass in the reversed variables
                     temp_answer = function_type.run_function(temp_variables[::-1])
 
-                #replace the current RPN[i][0] with temp_answer
+                # replace the current RPN[i][0] with temp_answer
                 self.RPN[i][0] = temp_answer
                 self.RPN[i][1] = 'Arrai'
 
@@ -454,7 +489,7 @@ class UIManager(object):
 
                     answer_string = answer_string[:-1]
                     answer_string += '\n'
-        elif isinstance(arrai, (int, float)):
+        elif isinstance(arrai, (int, float, bool)):
             answer_string += str(arrai)
 
         return answer_string
@@ -463,7 +498,7 @@ class UIManager(object):
 if __name__ == '__main__':
     uimanager = UIManager()
 
-    print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    print_answer = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     all_answers = []
 
     # V1.txt
@@ -633,3 +668,102 @@ if __name__ == '__main__':
         for i in answers:
             print(i)
         print('\n')
+
+    # V11.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V11.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('isParallel(a,b)'))
+    answers.append(uimanager.run_result('IsParallel(a,b)'))
+    answers.append(uimanager.run_result('isParallel(a,b)'))
+    answers.append(uimanager.run_result('IsParallel(a,b)'))
+    all_answers.append(answers)
+    if print_answer[10]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V12.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V12.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('isOrthogonal(a,b)'))
+    answers.append(uimanager.run_result('isOrthogonal(a,b)'))
+    answers.append(uimanager.run_result('IsOrthogonal(a,b)'))
+    answers.append(uimanager.run_result('IsOrthogonal(a,b)'))
+    all_answers.append(answers)
+    if print_answer[11]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V13.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V13.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('angle(a,b)'))
+    answers.append(uimanager.run_result('Angle(a,b)'))
+    answers.append(uimanager.run_result('angle(a,b)'))
+    all_answers.append(answers)
+    if print_answer[12]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+    # V14.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V14.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('PN(a,b)'))
+    answers.append(uimanager.run_result('pN(a,b)'))
+    answers.append(uimanager.run_result('PN(a,b)'))
+    all_answers.append(answers)
+    if print_answer[13]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+# V15.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V15.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('IsLI(a)'))
+    answers.append(uimanager.run_result('IsLI(a)'))
+    answers.append(uimanager.run_result('isLI(a)'))
+    all_answers.append(answers)
+    if print_answer[14]:
+        for i in answers:
+            print(i)
+        print('\n')
+
+# V16.txt
+    filename = 'C:\\Users\\User\\Desktop\\Vector\\V16.txt'
+    with open(filename, 'r') as file:
+        read_data = file.read()
+    uimanager.set_arrais(read_data)
+
+    answers = []
+    answers.append(uimanager.run_result('Ob(a)'))
+    answers.append(uimanager.run_result('Ob(a)'))
+    answers.append(uimanager.run_result('ob(a)'))
+    all_answers.append(answers)
+    if print_answer[15]:
+        for i in answers:
+            print(i)
+        print('\n')
+

@@ -85,10 +85,26 @@ if __name__ == "__main__":
 		#projection
 		print(ar.projection(Arrai([0, 0, 1]), Arrai([0, 0, 1])))
 
-	# triangle area
-	print(ar.triangle_area(Arrai([1, 2, 3]), Arrai([1, -3, -5])))
-	print(ar.triangle_area(Arrai([1, 4, 2]), Arrai([2, 6, 6])))
+		# triangle area
+		print(ar.triangle_area(Arrai([1, 2, 3]), Arrai([1, -3, -5])))
+		print(ar.triangle_area(Arrai([1, 4, 2]), Arrai([2, 6, 6])))
 
+		# is parallel
+		print(ar.is_parallel(Arrai([2, 1, -1]), Arrai([-6, -3, 3])))
+		print(ar.is_parallel(Arrai([1, 4, 2]), Arrai([2, 6, 6])))
 
+		# is parallel
+		print(ar.is_orthogonal(Arrai([-3, -1, 4]), Arrai([2, 14, 5])))
 
+		# angle is degree
+		print(ar.angle_degree(Arrai([-71.368796, 11.874114, -99.084075]), Arrai([53.336400, 69.741845, 83.364254])))
+
+		# plane normal
+		print(ar.plane_normal(Arrai([62.944737, 81.158387, -74.602637]), Arrai([82.675171, 26.471849, -80.491919])))
+
+		# is_linear_independent
+		print(ar.is_linear_independent([Arrai([-11, -67, -20]), Arrai([84, 2, 83]), Arrai([-82, 99, -81])]))
+
+	# Gram-schmidt
+	print(ar.Gram_Schmidt_Orthogonalization([Arrai([-68.358043, -71.770035, 85.769027]), Arrai([-42.710827, 2.417330, 46.420770]), Arrai([37.425823, 44.265385, 49.969604])]))
 

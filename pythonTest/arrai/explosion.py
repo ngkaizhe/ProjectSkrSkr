@@ -33,6 +33,16 @@ class Explosion(Enum):
     COMPONENT_NOT_VECTOR = ValueError('I only know how to perform component using vectors')
     PROJECTION_NOT_VECTOR = ValueError('I only know how to perform projection using vectors')
     TRIANGLE_AREA_NOT_VECTOR = ValueError('I only know how to perform triangle area using vectors')
+    TRIANGLE_AREA_VECTOR_NOT_SAME_DIMENSION = ValueError('I only know how to perform triangle area using same dimension\'s vectors')
+    ANGLE_NOT_VECTOR = ValueError('I only know how to perform angle using vectors')
+    ANGLE_VECTOR_NOT_SAME_DIMENSION = ValueError('I only know how to perform angle using same dimension\'s vectors')
+    PARALLEL_NOT_VECTOR = ValueError('I only know how to find parallel using vectors')
+    PARALLEL_VECTOR_NOT_SAME_DIMENSION = ValueError('I only know how to perform parallel using same dimension\'s vectors')
+    ORTHOGONAL_NOT_VECTOR = ValueError('I only know how to find orthogonal using vectors')
+    ORTHOGONAL_VECTOR_NOT_SAME_DIMENSION = ValueError('I only know how to perform orthogonal using same dimension\'s vectors')
+    PLANE_NORMAL_NOT_VECTOR = ValueError('I only know how to find plane normal using vectors')
+    PLANE_NORMAL_VECTOR_NOT_THREE_DIMENSION = ValueError(
+        'I only know how to plane normal using 3 dimensions vectors')
 
     TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 

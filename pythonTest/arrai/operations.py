@@ -1,6 +1,8 @@
 from .arrai import *
 from .explosion import Explosion
 from . import helpers as helpers
+import math
+from typing import List
 
 """ 
 arrai_operation.py
@@ -223,9 +225,134 @@ def projection(a: Arrai, b: Arrai) -> Arrai:
 
 def triangle_area(a: Arrai, b: Arrai) -> NumberTypes:
     if is_vector(a) and is_vector(b):
-        cross = cross_product(a, b)
-        return 0.5 * norm(cross)
+        first = a[0]
+        second = b[0]
+
+        if len(first) != len(second):
+            Explosion.TRIANGLE_AREA_VECTOR_NOT_SAME_DIMENSION.bang()
+            return None
+
+        else:
+            radians = angle_radians(a, b)
+            sin = math.sin(radians)
+
+            return 0.5 * sin * norm(a) * norm(b)
 
     else:
         Explosion.TRIANGLE_AREA_NOT_VECTOR.bang()
         return None
+
+def angle_degree(a: Arrai, b: Arrai) -> NumberTypes:
+    return  math.degrees(angle_radians(a, b))
+
+def angle_radians(a: Arrai, b: Arrai) -> NumberTypes:
+    if is_vector(a) and is_vector(b):
+        first = a[0]
+        second = b[0]
+
+        if len(first) != len(second):
+            Explosion.ANGLE_VECTOR_NOT_SAME_DIMENSION.bang()
+            return None
+
+        else:
+            cos = dot(a, b)[0][0] / (norm(a) * norm(b))
+            angle_in_radians = math.acos(cos)
+
+            return angle_in_radians
+
+    else:
+        Explosion.ANGLE_NOT_VECTOR.bang()
+        return None
+
+def is_parallel(a: Arrai, b: Arrai) -> bool:
+    if is_vector(a) and is_vector(b):
+        first = a[0]
+        second = b[0]
+
+        if len(first) != len(second):
+            Explosion.PARALLEL_VECTOR_NOT_SAME_DIMENSION.bang()
+            return None
+
+        else:
+            if abs(dot(a, b)[0][0]) == norm(a) * norm(b):
+                return True
+
+            else:
+                return False
+
+    else:
+        Explosion.PARALLEL_NOT_VECTOR.bang()
+        return None
+
+def is_orthogonal(a: Arrai, b: Arrai) -> bool:
+    if is_vector(a) and is_vector(b):
+        first = a[0]
+        second = b[0]
+
+        if len(first) != len(second):
+            Explosion.ORTHOGONAL_VECTOR_NOT_SAME_DIMENSION.bang()
+            return None
+
+        else:
+            if dot(a, b)[0][0] == 0:
+                return True
+
+            else:
+                return False
+
+    else:
+        Explosion.ORTHOGONAL_NOT_VECTOR.bang()
+        return None
+
+def plane_normal(a: Arrai, b: Arrai) -> Arrai:
+    if is_vector(a) and is_vector(b):
+        first = a[0]
+        second = b[0]
+
+        if len(first) != 3 or len(second) != 3:
+            Explosion.PLANE_NORMAL_VECTOR_NOT_THREE_DIMENSION.bang()
+            return None
+
+        else:
+            return cross_product(a, b)
+
+    else:
+        Explosion.PLANE_NORMAL_NOT_VECTOR.bang()
+        return None
+
+def is_linear_independent(a: List[Arrai]) -> bool:
+    temp = []
+
+    for i in a:
+        temp.append(i[0])
+
+    temp = Arrai(temp)
+
+    if rank(temp) == temp.shape[0]:
+        return True
+    else:
+        return False
+
+def Gram_Schmidt_Orthogonalization(a : List[Arrai])-> Arrai:
+    u_set = a[:]
+
+    v_set = []
+    m = 0
+    while m < len(u_set):
+        i = 0
+        total = u_set[m]
+
+        while i < m:
+            total -= projection(u_set[m], v_set[i])
+            i += 1
+
+        v_set.append(normalize(total))
+        m += 1
+
+    answer = []
+
+    for v in v_set:
+        answer.append(v[0])
+
+    return Arrai(answer)
+
