@@ -103,8 +103,8 @@ if __name__ == "__main__":
 		print(ar.plane_normal(Arrai([62.944737, 81.158387, -74.602637]), Arrai([82.675171, 26.471849, -80.491919])))
 
 		# is_linear_independent
-		print(ar.is_linear_independent([Arrai([-11, -67, -20]), Arrai([84, 2, 83]), Arrai([-82, 99, -81])]))
+		print(ar.is_linear_independent([Arrai([-11, -67, -20]), Arrai([-93, 32, -101]), Arrai([-82, 99, -81])]))
 
-	# Gram-schmidt
-	print(ar.Gram_Schmidt_Orthogonalization([Arrai([-68.358043, -71.770035, 85.769027]), Arrai([-42.710827, 2.417330, 46.420770]), Arrai([37.425823, 44.265385, 49.969604])]))
+		# Gram-schmidt
+		print(ar.Gram_Schmidt_Orthogonalization([Arrai([-68.358043, -71.770035, 85.769027]), Arrai([-42.710827, 2.417330, 46.420770]), Arrai([37.425823, 44.265385, 49.969604])]))
 
