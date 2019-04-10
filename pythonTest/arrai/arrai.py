@@ -3,6 +3,8 @@ import copy
 from .recursive_functions import *
 from .explosion import Explosion
 
+
+ERROR = 0.000000001
 NumberTypes = (int, float, complex)
 
 class Arrai(object):
@@ -76,21 +78,20 @@ class Arrai(object):
 
     @classmethod
     def full(cls, shape: (tuple, list), value=0):
-        List: list = []
 
         # shape can only contain 2 elements inside
         if len(shape) is not 2:
             # TODO: return exception
             return
 
-        temp_list = value
-        for x in reversed(shape):
-            List.clear()
-            for i in range(x):
-                List.append(temp_list)
-            temp_list = List[:]
+        mat = []
+        for i in range(shape[0]):
+            row = []
+            for j in range(shape[1]):
+                row.append(value)
+            mat.append(row)
 
-        return cls(List)
+        return cls(mat)
 
     @classmethod
     def identity(cls, shape: (tuple, list)):

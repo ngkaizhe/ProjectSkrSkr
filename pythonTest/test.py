@@ -132,6 +132,30 @@ if __name__ == "__main__":
 		B = Arrai([[4],[3],[2],[1],[5]])
 		print(ar.least_square(A, B))
 
+		print("PM")
+		A = ar.power_method(Arrai([[0,-7,6,],[-2,-2,-4,],[-2,-5,1,],]))
+		print(A[0])
+		print(A[1])
+
+		print("PM")
+		A = ar.power_method(Arrai([[2,-12],[1,-5]]))
+		print(A[0])
+		print(A[1])
+
+		print("Solve Eigenvector")
+		A = ar.eigen(Arrai([[2,-12],[1,-5]]))
+		print(A[0])
+		print(A[1])
+
+		print("Solve Eigenvector")
+		A = ar.eigen(Arrai([[-30,47,47,],[75,-19,6,],[77,7,-18,],]))
+		print(A[0])
+		print(A[1])
+
+		A = Arrai([[1,1,2,1,0,0],[1,1,3,1,1,1],[1,1,2,1,1,0],[0,0,1,1,1,0]])
+		#print(ar.to_RREF(A))
+		#print(ar.null(A))
+
 
 
 

@@ -11,6 +11,7 @@ Concrete module for array's operation such as transpose, inverse, arithmetic, et
 
 """
 
+
 def cofactor(arr: Arrai) -> Arrai:
     ret = copy.deepcopy(arr)
 
@@ -65,6 +66,7 @@ def det(arr: Arrai) -> NumberTypes:
 def solve_linsys(A: Arrai, B: Arrai) -> Arrai:
     if A.shape[0] != B.shape[0]:
         Explosion.LEAST_SQUARE_ROW_NUM_NOT_EQUAL.bang()
+        return
 
     if is_square(A):
         X = helpers.helper_RREF(A, B)
@@ -80,6 +82,166 @@ def least_square(A: Arrai, B: Arrai) -> Arrai:
 
     t_A = transpose(A)
     return inverse(t_A * A) * t_A * B
+
+def null(A: Arrai, flag: str = "") -> Arrai:
+    A = helpers.helper_RREF(A)["A"]
+    row_count = A.shape[0]
+    col_count = A.shape[1]
+
+    no_vars = col_count
+    i_unknowns = []
+
+    i_row = 0
+    i_col = 0
+    while(True):
+        if(i_col >= col_count): break
+        if(i_row < row_count and math.fabs(A[i_row][i_col]) > ERROR): # If pivot is found, go next row
+            i_row += 1
+        else:
+            i_unknowns.append(i_col) # Keep the index of unknown variables
+        i_col += 1
+
+
+    no_unknowns = len(i_unknowns)
+    if(no_unknowns == 0):
+        Explosion.NO_NULL_SPACE.bang()
+    ans = Arrai.zeros((no_vars, no_unknowns))
+    for i in range(no_unknowns):
+        ans[i_unknowns[i]][i] = 1
+        for j in range(row_count):
+            k = j
+            while(k < col_count and math.fabs(A[j][k] ) < ERROR): # Find the pivot in the row
+                k += 1
+            if(k == col_count): break
+
+            pivot = 0 # value of the pivot variable
+            i_pivot = k
+            k += 1
+            while(k < col_count):
+                pivot -= A[j][k] * ans[k][i]
+                k += 1
+            ans[i_pivot][i] = pivot
+            #if(flag != "r"):
+             #   ans = ans.set_col(i, normalize(ans.col(i)))
+    if(flag != "r"):
+        arr = []
+        for i in range(ans.shape[1]):
+            arr.append(transpose(ans.col(i)))
+
+        ans = transpose(Gram_Schmidt_Orthogonalization(arr))
+
+    return ans
+
+def eigen(A: Arrai) -> (NumberTypes, Arrai):
+    if not is_square(A):
+        Explosion.EIGEN_NOT_SQUARE.bang()
+        return 
+
+    if A.length() == 2:
+        a = A[0][0]; b = A[0][1];
+        c = A[1][0]; d = A[1][1];
+
+        x = 1
+        y = -(a + d)
+        z = a*d - b*c
+
+        S = math.sqrt(y**2 - 4*x*z)
+
+        eigen_val = [0,0]
+        eigen_val[0] = (-y + S) / (2*x)
+        eigen_val[1] = (-y - S) / (2*x)
+
+        eigen_vectors = Arrai.zeros(A.shape)  
+        eigen_vals = Arrai([[eigen_val[0]],[eigen_val[1]]]);
+
+        for i in range(2):
+            eigen_vector = null(A - Arrai.identity(A.shape) * eigen_val[i]);
+            eigen_vectors = eigen_vectors.set_col(i, eigen_vector)
+
+        return (eigen_vectors, eigen_vals)
+
+    elif A.length() == 3:
+    # ev^3 + x * ev^2 + y * ev + z
+
+        a = A[0][0]; b = A[0][1]; c = A[0][2]
+        d = A[1][0]; e = A[1][1]; f = A[1][2]
+        g = A[2][0]; h = A[2][1]; i = A[2][2]
+
+        x = -(a+e+i)
+        y = (a*e + a*i + e*i - b*d - c*g - f*h)
+        z = a * (f*h - e*i) + b * (d*i - f*g) + c * (e*g - d*h)
+
+        Q = (x**2 - 3*y) / 9
+        R = (2*x**3 - 9*x*y + 27*z) / 54
+
+        eigen_val = [0,0,0]
+        if(R**2 < Q**3):
+            
+            theta = math.acos(R / math.sqrt(Q**3))
+            S = -2 * math.sqrt(Q)
+            T = x / 3
+            
+            eigen_val[0] = S * math.cos(theta/3) - T
+            eigen_val[1] = S * math.cos((theta + 2*math.pi)/3) - T
+            eigen_val[2] = S * math.cos((theta - 2*math.pi)/3) - T
+
+            eigen_vectors = Arrai.zeros(A.shape)  
+            eigen_vals = Arrai([[eigen_val[0]],[eigen_val[1]],[eigen_val[2]]]);
+
+            for i in range(3):
+                eigen_vector = null(A - Arrai.identity(A.shape) * eigen_val[i]);
+                eigen_vectors = eigen_vectors.set_col(i, eigen_vector)
+
+            return (eigen_vectors, eigen_vals)
+
+
+
+
+
+
+
+
+def power_method(A: Arrai) -> (NumberTypes, Arrai):
+    
+    if not is_square(A):
+        Explosion.EIGEN_NOT_SQUARE.bang()
+        return 
+
+    x = Arrai.full((A.length(), 1), 1) # Initial guess for x
+
+
+    approximation  = Arrai.full((A.shape[0], 1), 1)
+    prev_approximation = Arrai.zeros((A.shape[0], 1))
+
+    while(True):
+
+        x = A * x
+
+        max_value = 0
+        for i in x: # Attempt to find the max absolute value in x's elements
+            if(math.fabs(i[0]) > math.fabs(max_value)): 
+                max_value = i[0]
+
+        prev_approximation = approximation;
+        approximation = x / max_value # normalize the vector to its max element be 1
+
+
+        for i in range(A.shape[0]):
+            if (math.fabs(approximation[i][0] - prev_approximation[i][0]) > ERROR):
+                break
+        else:
+            break
+
+
+        # By Rayleigh quotient
+        eigen_vector = approximation;
+        eigen_value = dot(A * eigen_vector, eigen_vector) / dot(eigen_vector, eigen_vector)
+
+
+    return (normalize(eigen_vector), eigen_value)
+
+
+
 
 
 
@@ -101,7 +263,7 @@ def norm(arr: Arrai) -> NumberTypes:
         return
 
     elif(is_vector(arr)):
-        return sqrt(to_scalar(dot(arr, arr)))
+        return math.sqrt(to_scalar(dot(arr, arr)))
     else:
         Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
         # TODO
@@ -292,7 +454,7 @@ def is_parallel(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if abs(dot(a, b)[0][0]) == norm(a) * norm(b):
+            if math.fabs(dot(a, b)[0][0] - norm(a) * norm(b)) < ERROR:
                 return True
 
             else:
@@ -312,7 +474,7 @@ def is_orthogonal(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if dot(a, b)[0][0] == 0:
+            if math.fabs(dot(a, b)[0][0]) < ERROR:
                 return True
 
             else:

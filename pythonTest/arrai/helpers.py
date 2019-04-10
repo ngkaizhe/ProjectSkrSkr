@@ -2,6 +2,7 @@ import copy
 
 from .arrai import *
 from .explosion import Explosion
+import math
 """ 
 arrai_helpers.py
 
@@ -76,9 +77,9 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
             ret_A.array[i], ret_A.array[r] = ret_A.array[r], ret_A.array[i]
             if(has_B): 
                 # ret_B = swap_row(ret_B, i, r)
-                ret_A.array[i], ret_A.array[r] = ret_A.array[r], ret_A.array[i]
+                ret_B.array[i], ret_B.array[r] = ret_B.array[r], ret_B.array[i]
 
-        if(ret_A[r][i_lead] != 0): # Make the lead to be 1 by dividing whole row by lead itself
+        if(math.fabs(ret_A[r][i_lead]) > 0.00000000001): # Make the lead to be 1 by dividing whole row by lead itself
             lead = ret_A[r][i_lead]
             det *= lead
             # ret_A = ret_A.set_row(r, ret_A.row(r) / lead);
