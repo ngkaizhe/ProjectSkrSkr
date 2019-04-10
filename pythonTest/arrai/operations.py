@@ -61,8 +61,27 @@ def det(arr: Arrai) -> NumberTypes:
         return
     return helpers.helper_RREF(arr)["det"]
 
+# Solve Linear system, whe
+def solve_linsys(A: Arrai, B: Arrai) -> Arrai:
+    if A.shape[0] != B.shape[0]:
+        Explosion.LEAST_SQUARE_ROW_NUM_NOT_EQUAL.bang()
 
-    # helper func for basic arithmetic operation, element-wise
+    if is_square(A):
+        X = helpers.helper_RREF(A, B)
+        return X["B"];
+    else:
+        return least_square(A, B)
+
+# Least square => x = inv(A'A) * A' * b
+def least_square(A: Arrai, B: Arrai) -> Arrai:
+    if A.shape[0] != B.shape[0]: # If their row number mismatched
+        Explosion.LEAST_SQUARE_ROW_NUM_NOT_EQUAL.bang()
+        return
+
+    t_A = transpose(A)
+    return inverse(t_A * A) * t_A * B
+
+
 
 """
 Follow Matlab definition
@@ -76,7 +95,6 @@ dim = 1: summation for all column vectors
 dim = 2: summation for all row vectors
 """
 
-from math import sqrt
 def norm(arr: Arrai) -> NumberTypes:
     if not isinstance(arr, Arrai):
         Explosion.INVALID_ARITHMETIC_OPERAND.bang()

@@ -43,6 +43,7 @@ class Explosion(Enum):
     PLANE_NORMAL_NOT_VECTOR = ValueError('I only know how to find plane normal using vectors')
     PLANE_NORMAL_VECTOR_NOT_THREE_DIMENSION = ValueError(
         'I only know how to plane normal using 3 dimensions vectors')
+    LEAST_SQUARE_ROW_NUM_NOT_EQUAL = ValueError("The row number of A and B must match in order to get least square")
 
     TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 
