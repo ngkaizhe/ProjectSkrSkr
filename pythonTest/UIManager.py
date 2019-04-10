@@ -1,6 +1,7 @@
 from arrai.arrai import Arrai
 from arrai.basic_operations import is_vector
 import re
+from typing import List
 
 
 # helper functions
@@ -38,6 +39,9 @@ def MyMul(first: Arrai, second: Arrai):
     else:
         return first * second
 
+def MyTrans(first: List[Arrai]):
+    return first[0].transpose()
+
 class Function(object):
 
     def __init__(self, name: str, function=None, total_variables: (int, str) = 0):
@@ -71,16 +75,15 @@ operator_map_list = {
     '+': [Function('add', Arrai.__add__, 2), 1],
     '-': [Function('sub', Arrai.__sub__, 2), 1],
     '*': [Function('mul', MyMul, 2), 2],
-    '\\': [Function('div', float.__divmod__, 2), 2],
 }
 
 # {
 # operator_string: [function_TODO, precendence]
 # }
 functions_map_list = {
+    # vector part
     ('Norm', 'norm'): [Function('Norm|norm', Arrai.norm, 'list'), 3],
     ('Normal', 'normal'): [Function('Normal|normal', Arrai.normal, 'list'), 3],
-    'Rank|rank': [Function('Rank|rank', None, 'list'), 3],
     ('Cross', 'cross'): [Function('Cross|cross', Arrai.cross_product, 'list'), 3],
     ('Com', 'com'): [Function('Com|com', Arrai.component, 'list'), 3],
     ('Proj', 'proj'): [Function('Proj|proj', Arrai.projection, 'list'), 3],
@@ -91,6 +94,16 @@ functions_map_list = {
     ('PN', 'pN'): [Function('PN|pN', Arrai.plane_normal, 'list'), 3],
     ('IsLI', 'isLI'): [Function('isLI|IsLI', Arrai.is_linear_independent, 'list'), 3],
     ('ob', 'Ob'): [Function('ob|Ob', Arrai.Gram_Schmidt_Orthogonalization, 'list'), 3],
+    #matrix part
+    ('Rank', 'rank'): [Function('Rank|rank', Arrai.rank, 'list'), 3],
+    ('Trans', 'trans'): [Function('Trans|trans', MyTrans, 'list'), 3],
+    'solve_linear': [Function('Solve Linear System', Arrai.solve_linear, 'list'), 3],
+    ('Det', 'det'): [Function('Det|det', Arrai.det, 'list'), 3],
+    ('Inverse', 'inverse'): [Function('Inverse|inverse', Arrai.inverse, 'list'), 3],
+    ('Adj', 'adj'): [Function('Adj|adj', Arrai.adjoint, 'list'), 3],
+    ('Eigen', 'eigen'): [Function('Eigen|eigen', Arrai.eigen, 'list'), 3],
+    ('pM', 'PM'): [Function('pM|PM', Arrai.power_method, 'list'), 3],
+    ('leastSquare', 'LeastSquare'): [Function('leastSquare|LeastSquare', Arrai.least_square, 'list'), 3],
 }
 
 class UIManager(object):
@@ -161,13 +174,22 @@ class UIManager(object):
 
     def run_result(self, text_string: str) -> str:
         text_list = text_string.splitlines()
+        answers_string = ''
 
         for problem in text_list:
             self.build_RPN(problem)
-            answer: Arrai = self.calculate_RPN()
-            answer_string = self.get_string(answer)
+            try:
+                answer: Arrai = self.calculate_RPN()
 
-            return answer_string
+            except Exception as explosion:
+                answer_string = explosion.args[0]
+
+            else:
+                answer_string = self.get_string(answer)
+
+            answers_string += answer_string + '\n'
+
+        return answers_string
 
     def build_RPN(self, problem: str) -> None:
         if problem is None or problem == '':
@@ -268,8 +290,8 @@ class UIManager(object):
 
         # set patterns of difference types
         function_patterns: str = set_function_patterns()
-        operator_patterns: str = '^[-\\\\+*]'
-        variable_patterns: str = '^[$][v]\d+'
+        operator_patterns: str = '^[-+*]'
+        variable_patterns: str = '^[$][vm]\d+'
         special_patterns: str = '^[(,)]'
         number_patterns: str = '^\d+[.]?\d*'
 
@@ -370,6 +392,7 @@ class UIManager(object):
                     self.RPN[i][1] = 'Arrai'
                     total_vector_used += 1
 
+                # for variables vector, the pattern should be $m{number}
                 elif self.RPN[i][0][1] == 'm':
                     pos = int(self.RPN[i][0][2:])
                     self.RPN[i][0] = self.matrix_arrais[pos]
@@ -385,7 +408,7 @@ class UIManager(object):
         self.recycle_bin.append(self.vector_arrais[:total_vector_used])
         del self.vector_arrais[:total_vector_used]
         self.recycle_bin.append(self.vector_arrais[:total_matrix_used])
-        del self.vector_arrais[:total_matrix_used]
+        del self.matrix_arrais[:total_matrix_used]
 
         # As all variables or number has been replace as Arrai, now the type
         # inside self.RPN should only be Arrai, Function, Operator
@@ -468,12 +491,24 @@ class UIManager(object):
             for i in arrai.array:
                 if i is not None:
                     for j in i:
-                        answer_string += str(j) + '\t'
+                        answer_string += str(j) + ' '
 
                     answer_string = answer_string[:-1]
                     answer_string += '\n'
+
         elif isinstance(arrai, (int, float, bool)):
             answer_string += str(arrai)
+
+        elif isinstance(arrai, tuple):
+            for single_arrai in arrai:
+                for i in single_arrai.array:
+                    if i is not None:
+                        for j in i:
+                            answer_string += str(j) + ' '
+
+                        answer_string = answer_string[:-1]
+                        answer_string += '\n'
+                answer_string += '\n'
 
         return answer_string
 
@@ -481,274 +516,462 @@ class UIManager(object):
 if __name__ == '__main__':
     uimanager = UIManager()
 
-    print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+    print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    print_answer_matrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
     all_answers = []
+    vector = False
+    matrix = True
 
-    # V1.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V1.txt'
+    if vector:
+        # V1.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V1.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('$v0+$v1+$v2+$v3'))
+        answers.append(uimanager.run_result('($v0+$v1)*$v2*$v3'))
+        answers.append(uimanager.run_result('($v0+$v1+$v2+$v3+$v4)*$v5'))
+        all_answers.append(answers)
+        if print_answer[0]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+
+        # V2.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('$v0*$v1'))
+        answers.append(uimanager.run_result('$v0*$v1'))
+        answers.append(uimanager.run_result('$v0*$v1'))
+        all_answers.append(answers)
+        if print_answer[1]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+        # V3.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V3.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('$v0+$v1'))
+        answers.append(uimanager.run_result('$v0+$v1'))
+        answers.append(uimanager.run_result('$v0+$v1'))
+        all_answers.append(answers)
+        if print_answer[2]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+        # V4.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V4.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('$v0*$v1'))
+        answers.append(uimanager.run_result('$v0*$v1'))
+        answers.append(uimanager.run_result('$v0*$v1'))
+        all_answers.append(answers)
+        if print_answer[3]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+        # V5.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V5.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('norm($v0)'))
+        answers.append(uimanager.run_result('Norm($v0)'))
+        answers.append(uimanager.run_result('norm($v0)'))
+        all_answers.append(answers)
+        if print_answer[4]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+        # V6.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V6.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('normal($v0)'))
+        answers.append(uimanager.run_result('Normal($v0)'))
+        answers.append(uimanager.run_result('normal($v0)'))
+        all_answers.append(answers)
+        if print_answer[5]:
+            for i in answers:
+                print(i)
+
+            print('\n')
+
+        # V7.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V7.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('cross($v0,$v1)'))
+        answers.append(uimanager.run_result('Cross($v0,$v1)'))
+        answers.append(uimanager.run_result('Cross($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[6]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V8.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V8.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('com($v0,$v1)'))
+        answers.append(uimanager.run_result('Com($v0,$v1)'))
+        answers.append(uimanager.run_result('Com($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[7]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V9.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V9.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('proj($v0,$v1)'))
+        answers.append(uimanager.run_result('Proj($v0,$v1)'))
+        answers.append(uimanager.run_result('Proj($v0,$v1)'))
+        answers.append(uimanager.run_result('proj($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[8]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V10.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V10.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('area($v0,$v1)'))
+        answers.append(uimanager.run_result('Area($v0,$v1)'))
+        answers.append(uimanager.run_result('Area($v0,$v1)'))
+        answers.append(uimanager.run_result('area($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[9]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V11.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V11.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('isParallel($v0,$v1)'))
+        answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
+        answers.append(uimanager.run_result('isParallel($v0,$v1)'))
+        answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[10]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V12.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V12.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
+        answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
+        answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
+        answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[11]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V13.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V13.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('angle($v0,$v1)'))
+        answers.append(uimanager.run_result('Angle($v0,$v1)'))
+        answers.append(uimanager.run_result('angle($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[12]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+        # V14.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V14.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('PN($v0,$v1)'))
+        answers.append(uimanager.run_result('pN($v0,$v1)'))
+        answers.append(uimanager.run_result('PN($v0,$v1)'))
+        all_answers.append(answers)
+        if print_answer[13]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+    # V15.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V15.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('IsLI($v0,$v1, $v2)'))
+        answers.append(uimanager.run_result('IsLI($v0,$v1, $v2, $v3, $v4)'))
+        answers.append(uimanager.run_result('isLI($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
+        all_answers.append(answers)
+        if print_answer[14]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+    # V16.txt
+        filename = 'C:\\Users\\User\\Desktop\\Vector\\V16.txt'
+        with open(filename, 'r') as file:
+            read_data = file.read()
+        uimanager.set_arrais(read_data)
+
+        answers = []
+        answers.append(uimanager.run_result('ob($v0,$v1, $v2)'))
+        answers.append(uimanager.run_result('Ob($v0,$v1, $v2, $v3, $v4)'))
+        answers.append(uimanager.run_result(
+            'Ob($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
+        all_answers.append(answers)
+        if print_answer[15]:
+            for i in answers:
+                print(i)
+            print('\n')
+
+# M1.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M1.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('$v0+$v1+$v2+$v3'))
-    answers.append(uimanager.run_result('($v0+$v1)*$v2*$v3'))
-    answers.append(uimanager.run_result('($v0+$v1+$v2+$v3+$v4)*$v5'))
+    answers.append(uimanager.run_result('$m0+$m1'))
+    answers.append(uimanager.run_result('$m0+$m1'))
+    answers.append(uimanager.run_result('$m0+$m1'))
     all_answers.append(answers)
-    if print_answer[0]:
+    if print_answer_matrix[0]:
         for i in answers:
             print(i)
-
         print('\n')
 
-
-    # V2.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
+    # M2.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M2.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('$v0*$v1'))
-    answers.append(uimanager.run_result('$v0*$v1'))
-    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('$m0*$m1'))
+    answers.append(uimanager.run_result('$m0*$m1'))
+    answers.append(uimanager.run_result('$m0*$m1'))
     all_answers.append(answers)
-    if print_answer[1]:
+    if print_answer_matrix[1]:
         for i in answers:
             print(i)
-
         print('\n')
 
-    # V3.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V3.txt'
+    # M3.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M3.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('$v0+$v1'))
-    answers.append(uimanager.run_result('$v0+$v1'))
-    answers.append(uimanager.run_result('$v0+$v1'))
+    answers.append(uimanager.run_result('rank($m0)'))
+    answers.append(uimanager.run_result('Rank($m0)'))
+    answers.append(uimanager.run_result('Rank($m0)'))
     all_answers.append(answers)
-    if print_answer[2]:
+    if print_answer_matrix[2]:
         for i in answers:
             print(i)
-
         print('\n')
 
-    # V4.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V4.txt'
+
+    # M4.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M4.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('$v0*$v1'))
-    answers.append(uimanager.run_result('$v0*$v1'))
-    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('trans($m0)'))
+    answers.append(uimanager.run_result('trans($m0)'))
+    answers.append(uimanager.run_result('Trans($m0)'))
     all_answers.append(answers)
-    if print_answer[3]:
+    if print_answer_matrix[3]:
         for i in answers:
             print(i)
-
         print('\n')
 
-    # V5.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V5.txt'
+
+    # M5.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M5.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('norm($v0)'))
-    answers.append(uimanager.run_result('Norm($v0)'))
-    answers.append(uimanager.run_result('norm($v0)'))
+    answers.append(uimanager.run_result('solve_linear($m0, $m1)'))
+    answers.append(uimanager.run_result('solve_linear($m0, $m1)'))
+    answers.append(uimanager.run_result('solve_linear($m0, $m1)'))
     all_answers.append(answers)
-    if print_answer[4]:
+    if print_answer_matrix[4]:
         for i in answers:
             print(i)
-
         print('\n')
 
-    # V6.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V6.txt'
+# M6.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M6.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('normal($v0)'))
-    answers.append(uimanager.run_result('Normal($v0)'))
-    answers.append(uimanager.run_result('normal($v0)'))
+    answers.append(uimanager.run_result('det($m0)'))
+    answers.append(uimanager.run_result('Det($m0)'))
+    answers.append(uimanager.run_result('det($m0)'))
     all_answers.append(answers)
-    if print_answer[5]:
+    if print_answer_matrix[5]:
         for i in answers:
             print(i)
-
         print('\n')
 
-    # V7.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V7.txt'
+# M7.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M7.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('cross($v0,$v1)'))
-    answers.append(uimanager.run_result('Cross($v0,$v1)'))
-    answers.append(uimanager.run_result('Cross($v0,$v1)'))
+    answers.append(uimanager.run_result('Inverse($m0)'))
+    answers.append(uimanager.run_result('inverse($m0)'))
+    answers.append(uimanager.run_result('inverse($m0)'))
+    answers.append(uimanager.run_result('Inverse($m0)'))
     all_answers.append(answers)
-    if print_answer[6]:
+    if print_answer_matrix[6]:
         for i in answers:
             print(i)
         print('\n')
 
-    # V8.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V8.txt'
+
+# M8.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M8.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('com($v0,$v1)'))
-    answers.append(uimanager.run_result('Com($v0,$v1)'))
-    answers.append(uimanager.run_result('Com($v0,$v1)'))
+    answers.append(uimanager.run_result('Adj($m0)'))
+    answers.append(uimanager.run_result('adj($m0)'))
+    answers.append(uimanager.run_result('Adj($m0)'))
     all_answers.append(answers)
-    if print_answer[7]:
+    if print_answer_matrix[7]:
         for i in answers:
             print(i)
         print('\n')
 
-    # V9.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V9.txt'
+# M9.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M9.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('proj($v0,$v1)'))
-    answers.append(uimanager.run_result('Proj($v0,$v1)'))
-    answers.append(uimanager.run_result('Proj($v0,$v1)'))
-    answers.append(uimanager.run_result('proj($v0,$v1)'))
+    answers.append(uimanager.run_result('eigen($m0)'))
+    answers.append(uimanager.run_result('Eigen($m0)'))
+    answers.append(uimanager.run_result('Eigen($m0)'))
     all_answers.append(answers)
-    if print_answer[8]:
+    if print_answer_matrix[8]:
         for i in answers:
             print(i)
         print('\n')
 
-    # V10.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V10.txt'
+# M10.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M10.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('area($v0,$v1)'))
-    answers.append(uimanager.run_result('Area($v0,$v1)'))
-    answers.append(uimanager.run_result('Area($v0,$v1)'))
-    answers.append(uimanager.run_result('area($v0,$v1)'))
+    answers.append(uimanager.run_result('PM($m0)'))
+    answers.append(uimanager.run_result('pM($m0)'))
+    answers.append(uimanager.run_result('pM($m0)'))
     all_answers.append(answers)
-    if print_answer[9]:
+    if print_answer_matrix[9]:
         for i in answers:
             print(i)
         print('\n')
 
-    # V11.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V11.txt'
+# M11.txt
+    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M11.txt'
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('isParallel($v0,$v1)'))
-    answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
-    answers.append(uimanager.run_result('isParallel($v0,$v1)'))
-    answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
+    answers.append(uimanager.run_result('LeastSquare($m0, $m1)'))
+    answers.append(uimanager.run_result('LeastSquare($m0, $m1)'))
+    answers.append(uimanager.run_result('LeastSquare($m0, $m1)'))
+    answers.append(uimanager.run_result('LeastSquare($m0, $m1)'))
     all_answers.append(answers)
-    if print_answer[10]:
+    if print_answer_matrix[10]:
         for i in answers:
             print(i)
         print('\n')
 
-    # V12.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V12.txt'
-    with open(filename, 'r') as file:
-        read_data = file.read()
-    uimanager.set_arrais(read_data)
 
-    answers = []
-    answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
-    answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
-    answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
-    answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
-    all_answers.append(answers)
-    if print_answer[11]:
-        for i in answers:
-            print(i)
-        print('\n')
 
-    # V13.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V13.txt'
-    with open(filename, 'r') as file:
-        read_data = file.read()
-    uimanager.set_arrais(read_data)
-
-    answers = []
-    answers.append(uimanager.run_result('angle($v0,$v1)'))
-    answers.append(uimanager.run_result('Angle($v0,$v1)'))
-    answers.append(uimanager.run_result('angle($v0,$v1)'))
-    all_answers.append(answers)
-    if print_answer[12]:
-        for i in answers:
-            print(i)
-        print('\n')
-
-    # V14.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V14.txt'
-    with open(filename, 'r') as file:
-        read_data = file.read()
-    uimanager.set_arrais(read_data)
-
-    answers = []
-    answers.append(uimanager.run_result('PN($v0,$v1)'))
-    answers.append(uimanager.run_result('pN($v0,$v1)'))
-    answers.append(uimanager.run_result('PN($v0,$v1)'))
-    all_answers.append(answers)
-    if print_answer[13]:
-        for i in answers:
-            print(i)
-        print('\n')
-
-# V15.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V15.txt'
-    with open(filename, 'r') as file:
-        read_data = file.read()
-    uimanager.set_arrais(read_data)
-
-    answers = []
-    answers.append(uimanager.run_result('IsLI($v0,$v1, $v2)'))
-    answers.append(uimanager.run_result('IsLI($v0,$v1, $v2, $v3, $v4)'))
-    answers.append(uimanager.run_result('isLI($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
-    all_answers.append(answers)
-    if print_answer[14]:
-        for i in answers:
-            print(i)
-        print('\n')
-
-# V16.txt
-    filename = 'C:\\Users\\User\\Desktop\\Vector\\V16.txt'
-    with open(filename, 'r') as file:
-        read_data = file.read()
-    uimanager.set_arrais(read_data)
-
-    answers = []
-    answers.append(uimanager.run_result('ob($v0,$v1, $v2)'))
-    answers.append(uimanager.run_result('Ob($v0,$v1, $v2, $v3, $v4)'))
-    answers.append(uimanager.run_result(
-        'Ob($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
-    all_answers.append(answers)
-    if print_answer[15]:
-        for i in answers:
-            print(i)
-        print('\n')
 

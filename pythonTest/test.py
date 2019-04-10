@@ -2,7 +2,7 @@ from arrai.arrai import Arrai
 import arrai.operations as ar
 
 if __name__ == "__main__":
-	if True:
+	if False:
 		a = Arrai([[100000000,2,3,4,5],[3,4,7,1,2],[2,1,3,3,4],[3,4,7,1,2],[1,2,3,4,5]])
 		b = Arrai([[6], [5], [4],[3],[2]])
 		print("A: \n%s\n" % a)
@@ -170,7 +170,4 @@ if __name__ == "__main__":
 		A = Arrai([[1,1,2,1,0,0],[1,1,3,1,1,1],[1,1,2,1,1,0],[0,0,1,1,1,0]])
 		print(ar.to_RREF(A))
 		print(ar.null(A))
-
-
-
 

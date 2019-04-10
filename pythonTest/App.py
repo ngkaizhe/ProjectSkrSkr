@@ -127,6 +127,7 @@ class App(QWidget):
             return
 
         self.uiManager.set_arrais(text)
+        self.input_textbox.clear()
 
     def run_result(self):
         text = self.calculated_textbox.toPlainText()
@@ -136,4 +137,5 @@ class App(QWidget):
 
         answer = self.uiManager.run_result(text)
         self.output_textbox.setPlainText(answer)
+        self.calculated_textbox.clear()
 

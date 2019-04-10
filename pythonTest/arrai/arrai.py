@@ -162,6 +162,38 @@ class Arrai(object):
         return Gram_Schmidt_Orthogonalization(arrais)
 
     @classmethod
+    def rank(cls, first: 'Arrai') -> NumberTypes:
+        return rank(first[0])
+
+    @classmethod
+    def solve_linear(cls, arrais: list) -> 'Arrai':
+        return solve_linsys(arrais[0], arrais[1])
+
+    @classmethod
+    def det(cls, arrais: list) -> NumberTypes:
+        return det(arrais[0])
+
+    @classmethod
+    def inverse(cls, arrais: list) -> 'Arrai':
+        return inverse(arrais[0])
+
+    @classmethod
+    def adjoint(cls, arrais: list) -> 'Arrai':
+        return adjoint(arrais[0])
+
+    @classmethod
+    def eigen(cls, arrais: list) -> tuple:
+        return eigen(arrais[0])
+
+    @classmethod
+    def power_method(cls, arrais: list) -> tuple:
+        return power_method(arrais[0])
+
+    @classmethod
+    def least_square(cls, arrais: list) -> 'Arrai':
+        return least_square(arrais[0], arrais[1])
+
+    @classmethod
     def arange(cls, total: int):
         new_list = []
         for i in range(total):
