@@ -114,52 +114,52 @@ class Arrai(object):
             pass
 
     @classmethod
-    def norm(cls, first: 'Arrai') -> NumberTypes:
-        return norm(first)
+    def norm(cls, first: list) -> NumberTypes:
+        return norm(first[0])
 
     @classmethod
-    def normal(cls, first: 'Arrai') -> 'Arrai':
-        return normalize(first)
+    def normal(cls, first: list) -> 'Arrai':
+        return normalize(first[0])
 
     @classmethod
-    def cross_product(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
-        return cross_product(first, second)
+    def cross_product(cls, arrais: list) -> 'Arrai':
+        return cross_product(arrais[0], arrais[1])
 
     @classmethod
-    def component(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
-        return component(first, second)
+    def component(cls, arrais: list) -> 'Arrai':
+        return component(arrais[0], arrais[1])
 
     @classmethod
-    def projection(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
-        return projection(first, second)
+    def projection(cls, arrais: list) -> 'Arrai':
+        return projection(arrais[0], arrais[1])
 
     @classmethod
-    def triangle_area(cls, first: 'Arrai', second: 'Arrai') -> NumberTypes:
-        return triangle_area(first, second)
+    def triangle_area(cls, arrais: list) -> NumberTypes:
+        return triangle_area(arrais[0], arrais[1])
 
     @classmethod
-    def is_parallel(cls, first: 'Arrai', second: 'Arrai') -> bool:
-        return is_parallel(first, second)
+    def is_parallel(cls, arrais: list) -> bool:
+        return is_parallel(arrais[0], arrais[1])
 
     @classmethod
-    def is_orthogonal(cls, first: 'Arrai', second: 'Arrai') -> bool:
-        return is_orthogonal(first, second)
+    def is_orthogonal(cls, arrais: list) -> bool:
+        return is_orthogonal(arrais[0], arrais[1])
 
     @classmethod
-    def angle_degree(cls, first: 'Arrai', second: 'Arrai') -> NumberTypes:
-        return angle_degree(first, second)
+    def angle_degree(cls, arrais: list) -> NumberTypes:
+        return angle_degree(arrais[0], arrais[1])
 
     @classmethod
-    def plane_normal(cls, first: 'Arrai', second: 'Arrai') -> 'Arrai':
-        return plane_normal(first, second)
+    def plane_normal(cls, arrais: list) -> 'Arrai':
+        return plane_normal(arrais[0], arrais[1])
 
     @classmethod
-    def is_linear_independent(cls, first: list) -> bool:
-        return is_linear_independent(first)
+    def is_linear_independent(cls, arrais: list) -> bool:
+        return is_linear_independent(arrais)
 
     @classmethod
-    def Gram_Schmidt_Orthogonalization(cls, first: list) -> 'Arrai':
-        return Gram_Schmidt_Orthogonalization(first)
+    def Gram_Schmidt_Orthogonalization(cls, arrais: list) -> 'Arrai':
+        return Gram_Schmidt_Orthogonalization(arrais)
 
     @classmethod
     def arange(cls, total: int):

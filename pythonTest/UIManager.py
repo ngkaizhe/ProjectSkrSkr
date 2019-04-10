@@ -78,17 +78,17 @@ operator_map_list = {
 # operator_string: [function_TODO, precendence]
 # }
 functions_map_list = {
-    ('Norm', 'norm'): [Function('Norm|norm', Arrai.norm, 1), 3],
-    ('Normal', 'normal'): [Function('Normal|normal', Arrai.normal, 1), 3],
-    'Rank': [Function('Rank', None, 1), 3],
-    ('Cross', 'cross'): [Function('Cross|cross', Arrai.cross_product, 2), 3],
-    ('Com', 'com'): [Function('Com|com', Arrai.component, 2), 3],
-    ('Proj', 'proj'): [Function('Proj|proj', Arrai.projection, 2), 3],
-    ('Area', 'area'): [Function('Area|area', Arrai.triangle_area, 2), 3],
-    ('isParallel', 'IsParallel'): [Function('isParallel|IsParallel', Arrai.is_parallel, 2), 3],
-    ('isOrthogonal', 'IsOrthogonal'): [Function('isOrthogonal|IsOrthogonal', Arrai.is_orthogonal, 2), 3],
-    ('angle', 'Angle'): [Function('angle|Angle', Arrai.angle_degree, 2), 3],
-    ('PN', 'pN'): [Function('PN|pN', Arrai.plane_normal, 2), 3],
+    ('Norm', 'norm'): [Function('Norm|norm', Arrai.norm, 'list'), 3],
+    ('Normal', 'normal'): [Function('Normal|normal', Arrai.normal, 'list'), 3],
+    'Rank|rank': [Function('Rank|rank', None, 'list'), 3],
+    ('Cross', 'cross'): [Function('Cross|cross', Arrai.cross_product, 'list'), 3],
+    ('Com', 'com'): [Function('Com|com', Arrai.component, 'list'), 3],
+    ('Proj', 'proj'): [Function('Proj|proj', Arrai.projection, 'list'), 3],
+    ('Area', 'area'): [Function('Area|area', Arrai.triangle_area, 'list'), 3],
+    ('isParallel', 'IsParallel'): [Function('isParallel|IsParallel', Arrai.is_parallel, 'list'), 3],
+    ('isOrthogonal', 'IsOrthogonal'): [Function('isOrthogonal|IsOrthogonal', Arrai.is_orthogonal, 'list'), 3],
+    ('angle', 'Angle'): [Function('angle|Angle', Arrai.angle_degree, 'list'), 3],
+    ('PN', 'pN'): [Function('PN|pN', Arrai.plane_normal, 'list'), 3],
     ('IsLI', 'isLI'): [Function('isLI|IsLI', Arrai.is_linear_independent, 'list'), 3],
     ('ob', 'Ob'): [Function('ob|Ob', Arrai.Gram_Schmidt_Orthogonalization, 'list'), 3],
 }
@@ -96,8 +96,9 @@ functions_map_list = {
 class UIManager(object):
 
     def __init__(self):
-        self.arrai_list: list
+        self.vector_arrais: list
         self.recycle_bin: list
+        self.matrix_arrais: list
         """
         map_list = {
             'Operator/Function': {
@@ -124,7 +125,8 @@ class UIManager(object):
         self.RPN: list
 
     def set_arrais(self, text_string: str) -> None:
-        self.arrai_list = []
+        self.vector_arrais = []
+        self.matrix_arrais =[]
         self.recycle_bin = []
 
         text_string_list = text_string.splitlines()
@@ -142,7 +144,7 @@ class UIManager(object):
                 currentPos += 1
 
                 temp_list = list(map(float, temp_list))
-                self.arrai_list.append(Arrai(temp_list))
+                self.vector_arrais.append(Arrai(temp_list))
 
             elif VectorOrMatrix == 'M':
                 (rows, cols) = list(map(int, text_string_list[currentPos].split()))
@@ -155,7 +157,7 @@ class UIManager(object):
                     temp_list = list(map(float, temp_list))
                     arrai.append(temp_list)
 
-                self.arrai_list.append(Arrai(arrai))
+                self.matrix_arrais.append(Arrai(arrai))
 
     def run_result(self, text_string: str) -> str:
         text_list = text_string.splitlines()
@@ -267,7 +269,7 @@ class UIManager(object):
         # set patterns of difference types
         function_patterns: str = set_function_patterns()
         operator_patterns: str = '^[-\\\\+*]'
-        variable_patterns: str = '^[a-zA-Z]'
+        variable_patterns: str = '^[$][v]\d+'
         special_patterns: str = '^[(,)]'
         number_patterns: str = '^\d+[.]?\d*'
 
@@ -357,14 +359,22 @@ class UIManager(object):
         # replace variables type token to the proper value
         # which is a = the first arrai, b = the second arrai etc...
         length = len(self.RPN)
-        total = 0
+        total_vector_used = 0
+        total_matrix_used = 0
         for i in range(length):
             if self.RPN[i][1] == 'Variable':
-                total += 1
-                temp_char = self.RPN[i][0]
-                pos = ord(temp_char) - ord('a')
-                self.RPN[i][0] = self.arrai_list[pos]
-                self.RPN[i][1] = 'Arrai'
+                # for variables vector, the pattern should be $v{number}
+                if self.RPN[i][0][1] == 'v':
+                    pos = int(self.RPN[i][0][2:])
+                    self.RPN[i][0] = self.vector_arrais[pos]
+                    self.RPN[i][1] = 'Arrai'
+                    total_vector_used += 1
+
+                elif self.RPN[i][0][1] == 'm':
+                    pos = int(self.RPN[i][0][2:])
+                    self.RPN[i][0] = self.matrix_arrais[pos]
+                    self.RPN[i][1] = 'Arrai'
+                    total_matrix_used += 1
 
             elif self.RPN[i][1] == 'Number':
                 temp_number = float(self.RPN[i][0])
@@ -372,8 +382,10 @@ class UIManager(object):
                 self.RPN[i][1] = 'Arrai'
 
         # delete the value inside arrai_list as will not be used in future
-        self.recycle_bin.append(self.arrai_list[:total])
-        del self.arrai_list[:total]
+        self.recycle_bin.append(self.vector_arrais[:total_vector_used])
+        del self.vector_arrais[:total_vector_used]
+        self.recycle_bin.append(self.vector_arrais[:total_matrix_used])
+        del self.vector_arrais[:total_matrix_used]
 
         # As all variables or number has been replace as Arrai, now the type
         # inside self.RPN should only be Arrai, Function, Operator
@@ -396,32 +408,6 @@ class UIManager(object):
                 self.RPN[i][1] = 'Arrai'
                 del self.RPN[i-2:i]
                 i -= 2
-
-            # special case for linear independent judgement!!!
-            # fucking trash input mode
-            elif self.RPN[i][1] == 'Function' and (self.RPN[i][0] == 'isLI' or self.RPN[i][0] == 'IsLI' or self.RPN[i][0] == 'Ob' or self.RPN[i][0] == 'ob'):
-                function_string = self.RPN[i][0]
-                function_type = self.map_list['Function'][function_string][0]
-
-                # get var[0] to temp_variables
-                temp_variables = []
-                temp_variables.append(self.RPN[i-2][0])
-
-                j = 1
-                while j < len(temp_variables[0][0]):
-                    temp_variables.append(self.arrai_list[0])
-                    self.recycle_bin.append(self.arrai_list[0])
-                    del self.arrai_list[0]
-                    j += 1
-
-                temp_answer = function_type.run_function(temp_variables)
-
-                # replace the current RPN[i][0] with temp_answer
-                self.RPN[i][0] = temp_answer
-                self.RPN[i][1] = 'Arrai'
-                del self.RPN[i - 3:i]
-                i -= 3
-
 
             elif self.RPN[i][1] == 'Function':
                 """
@@ -454,9 +440,6 @@ class UIManager(object):
 
                 if left_bracket_found is False:
                     print('Function must followed before () bracket!')
-
-                if len(temp_variables) != function_type.total_variables:
-                    print('Total Function Variables Needed not same as input variables!')
 
                 else:
                     # remember to pass in the reversed variables
@@ -498,7 +481,7 @@ class UIManager(object):
 if __name__ == '__main__':
     uimanager = UIManager()
 
-    print_answer = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
     all_answers = []
 
     # V1.txt
@@ -508,15 +491,16 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('a+b+c+d'))
-    answers.append(uimanager.run_result('(a+b)*c*d'))
-    answers.append(uimanager.run_result('(a+b+c+d+e)*f'))
+    answers.append(uimanager.run_result('$v0+$v1+$v2+$v3'))
+    answers.append(uimanager.run_result('($v0+$v1)*$v2*$v3'))
+    answers.append(uimanager.run_result('($v0+$v1+$v2+$v3+$v4)*$v5'))
     all_answers.append(answers)
     if print_answer[0]:
         for i in answers:
             print(i)
 
         print('\n')
+
 
     # V2.txt
     filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
@@ -525,9 +509,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('a*b'))
-    answers.append(uimanager.run_result('a*b'))
-    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('$v0*$v1'))
     all_answers.append(answers)
     if print_answer[1]:
         for i in answers:
@@ -542,9 +526,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('a+b'))
-    answers.append(uimanager.run_result('a+b'))
-    answers.append(uimanager.run_result('a+b'))
+    answers.append(uimanager.run_result('$v0+$v1'))
+    answers.append(uimanager.run_result('$v0+$v1'))
+    answers.append(uimanager.run_result('$v0+$v1'))
     all_answers.append(answers)
     if print_answer[2]:
         for i in answers:
@@ -559,9 +543,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('a*b'))
-    answers.append(uimanager.run_result('a*b'))
-    answers.append(uimanager.run_result('a*b'))
+    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('$v0*$v1'))
+    answers.append(uimanager.run_result('$v0*$v1'))
     all_answers.append(answers)
     if print_answer[3]:
         for i in answers:
@@ -576,9 +560,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('norm(a)'))
-    answers.append(uimanager.run_result('Norm(a)'))
-    answers.append(uimanager.run_result('norm(a)'))
+    answers.append(uimanager.run_result('norm($v0)'))
+    answers.append(uimanager.run_result('Norm($v0)'))
+    answers.append(uimanager.run_result('norm($v0)'))
     all_answers.append(answers)
     if print_answer[4]:
         for i in answers:
@@ -593,9 +577,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('normal(a)'))
-    answers.append(uimanager.run_result('Normal(a)'))
-    answers.append(uimanager.run_result('normal(a)'))
+    answers.append(uimanager.run_result('normal($v0)'))
+    answers.append(uimanager.run_result('Normal($v0)'))
+    answers.append(uimanager.run_result('normal($v0)'))
     all_answers.append(answers)
     if print_answer[5]:
         for i in answers:
@@ -610,9 +594,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('cross(a,b)'))
-    answers.append(uimanager.run_result('Cross(a,b)'))
-    answers.append(uimanager.run_result('Cross(a,b)'))
+    answers.append(uimanager.run_result('cross($v0,$v1)'))
+    answers.append(uimanager.run_result('Cross($v0,$v1)'))
+    answers.append(uimanager.run_result('Cross($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[6]:
         for i in answers:
@@ -626,9 +610,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('com(a,b)'))
-    answers.append(uimanager.run_result('Com(a,b)'))
-    answers.append(uimanager.run_result('Com(a,b)'))
+    answers.append(uimanager.run_result('com($v0,$v1)'))
+    answers.append(uimanager.run_result('Com($v0,$v1)'))
+    answers.append(uimanager.run_result('Com($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[7]:
         for i in answers:
@@ -642,10 +626,10 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('proj(a,b)'))
-    answers.append(uimanager.run_result('Proj(a,b)'))
-    answers.append(uimanager.run_result('Proj(a,b)'))
-    answers.append(uimanager.run_result('proj(a,b)'))
+    answers.append(uimanager.run_result('proj($v0,$v1)'))
+    answers.append(uimanager.run_result('Proj($v0,$v1)'))
+    answers.append(uimanager.run_result('Proj($v0,$v1)'))
+    answers.append(uimanager.run_result('proj($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[8]:
         for i in answers:
@@ -659,10 +643,10 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('area(a,b)'))
-    answers.append(uimanager.run_result('Area(a,b)'))
-    answers.append(uimanager.run_result('Area(a,b)'))
-    answers.append(uimanager.run_result('area(a,b)'))
+    answers.append(uimanager.run_result('area($v0,$v1)'))
+    answers.append(uimanager.run_result('Area($v0,$v1)'))
+    answers.append(uimanager.run_result('Area($v0,$v1)'))
+    answers.append(uimanager.run_result('area($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[9]:
         for i in answers:
@@ -676,10 +660,10 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('isParallel(a,b)'))
-    answers.append(uimanager.run_result('IsParallel(a,b)'))
-    answers.append(uimanager.run_result('isParallel(a,b)'))
-    answers.append(uimanager.run_result('IsParallel(a,b)'))
+    answers.append(uimanager.run_result('isParallel($v0,$v1)'))
+    answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
+    answers.append(uimanager.run_result('isParallel($v0,$v1)'))
+    answers.append(uimanager.run_result('IsParallel($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[10]:
         for i in answers:
@@ -693,10 +677,10 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('isOrthogonal(a,b)'))
-    answers.append(uimanager.run_result('isOrthogonal(a,b)'))
-    answers.append(uimanager.run_result('IsOrthogonal(a,b)'))
-    answers.append(uimanager.run_result('IsOrthogonal(a,b)'))
+    answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
+    answers.append(uimanager.run_result('isOrthogonal($v0,$v1)'))
+    answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
+    answers.append(uimanager.run_result('IsOrthogonal($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[11]:
         for i in answers:
@@ -710,9 +694,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('angle(a,b)'))
-    answers.append(uimanager.run_result('Angle(a,b)'))
-    answers.append(uimanager.run_result('angle(a,b)'))
+    answers.append(uimanager.run_result('angle($v0,$v1)'))
+    answers.append(uimanager.run_result('Angle($v0,$v1)'))
+    answers.append(uimanager.run_result('angle($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[12]:
         for i in answers:
@@ -726,9 +710,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('PN(a,b)'))
-    answers.append(uimanager.run_result('pN(a,b)'))
-    answers.append(uimanager.run_result('PN(a,b)'))
+    answers.append(uimanager.run_result('PN($v0,$v1)'))
+    answers.append(uimanager.run_result('pN($v0,$v1)'))
+    answers.append(uimanager.run_result('PN($v0,$v1)'))
     all_answers.append(answers)
     if print_answer[13]:
         for i in answers:
@@ -742,9 +726,9 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('IsLI(a)'))
-    answers.append(uimanager.run_result('IsLI(a)'))
-    answers.append(uimanager.run_result('isLI(a)'))
+    answers.append(uimanager.run_result('IsLI($v0,$v1, $v2)'))
+    answers.append(uimanager.run_result('IsLI($v0,$v1, $v2, $v3, $v4)'))
+    answers.append(uimanager.run_result('isLI($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
     all_answers.append(answers)
     if print_answer[14]:
         for i in answers:
@@ -758,9 +742,10 @@ if __name__ == '__main__':
     uimanager.set_arrais(read_data)
 
     answers = []
-    answers.append(uimanager.run_result('Ob(a)'))
-    answers.append(uimanager.run_result('Ob(a)'))
-    answers.append(uimanager.run_result('ob(a)'))
+    answers.append(uimanager.run_result('ob($v0,$v1, $v2)'))
+    answers.append(uimanager.run_result('Ob($v0,$v1, $v2, $v3, $v4)'))
+    answers.append(uimanager.run_result(
+        'Ob($v0,$v1, $v2, $v3, $v4, $v5, $v6, $v7, $v8, $v9, $v10, $v11, $v12, $v13, $v14, $v15, $v16, $v17, $v18, $v19)'))
     all_answers.append(answers)
     if print_answer[15]:
         for i in answers:
