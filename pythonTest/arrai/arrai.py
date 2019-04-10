@@ -29,7 +29,7 @@ class Arrai(object):
 
     def __repr__(self):
         answer = 'Arrai('
-        answer += get_string(self.array, self.ndim - 1, self.ndim, ',', True)
+        answer += get_string(self.array, self.ndim - 1, self.ndim, '  ', True)
         answer += ')'
         return answer
 

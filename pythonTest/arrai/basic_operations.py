@@ -2,6 +2,7 @@ import copy
 
 from .arrai import *
 from .explosion import Explosion
+import math
 
 
 def reshape(arr: Arrai, shape: (tuple, list)) -> Arrai:
@@ -123,6 +124,14 @@ def is_scalar(object: Arrai) -> bool:
         and (object.shape[0] is 1) and (object.shape[1] is 1)):
             return True
     
+    return False
+
+def is_zeros(object: Arrai) -> bool:
+    if(isinstance(object, Arrai)):
+        for i in object:
+            for j in i:
+                if(math.fabs(j) > ERROR): return False
+        return True
     return False
 
 # Return the scalar in numerical type if it is scalar

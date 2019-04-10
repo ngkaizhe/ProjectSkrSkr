@@ -94,8 +94,8 @@ def null(A: Arrai, flag: str = "") -> Arrai:
     i_row = 0
     i_col = 0
     while(True):
-        if(i_col >= col_count): break
-        if(i_row < row_count and math.fabs(A[i_row][i_col]) > ERROR): # If pivot is found, go next row
+        if (i_col >= col_count): break
+        if (i_row < row_count and abs(A[i_row][i_col]) > ERROR): # If pivot is found, go next row
             i_row += 1
         else:
             i_unknowns.append(i_col) # Keep the index of unknown variables
@@ -103,14 +103,15 @@ def null(A: Arrai, flag: str = "") -> Arrai:
 
 
     no_unknowns = len(i_unknowns)
-    if(no_unknowns == 0):
+    if (no_unknowns == 0):
         Explosion.NO_NULL_SPACE.bang()
     ans = Arrai.zeros((no_vars, no_unknowns))
+
     for i in range(no_unknowns):
         ans[i_unknowns[i]][i] = 1
         for j in range(row_count):
             k = j
-            while(k < col_count and math.fabs(A[j][k] ) < ERROR): # Find the pivot in the row
+            while(k < col_count and abs(A[j][k] ) < ERROR): # Find the pivot in the row
                 k += 1
             if(k == col_count): break
 
@@ -123,7 +124,7 @@ def null(A: Arrai, flag: str = "") -> Arrai:
             ans[i_pivot][i] = pivot
             #if(flag != "r"):
              #   ans = ans.set_col(i, normalize(ans.col(i)))
-    if(flag != "r"):
+    if (flag != "r"):
         arr = []
         for i in range(ans.shape[1]):
             arr.append(transpose(ans.col(i)))
@@ -151,14 +152,7 @@ def eigen(A: Arrai) -> (NumberTypes, Arrai):
         eigen_val[0] = (-y + S) / (2*x)
         eigen_val[1] = (-y - S) / (2*x)
 
-        eigen_vectors = Arrai.zeros(A.shape)  
         eigen_vals = Arrai([[eigen_val[0]],[eigen_val[1]]]);
-
-        for i in range(2):
-            eigen_vector = null(A - Arrai.identity(A.shape) * eigen_val[i]);
-            eigen_vectors = eigen_vectors.set_col(i, eigen_vector)
-
-        return (eigen_vectors, eigen_vals)
 
     elif A.length() == 3:
     # ev^3 + x * ev^2 + y * ev + z
@@ -188,19 +182,26 @@ def eigen(A: Arrai) -> (NumberTypes, Arrai):
             eigen_vectors = Arrai.zeros(A.shape)  
             eigen_vals = Arrai([[eigen_val[0]],[eigen_val[1]],[eigen_val[2]]]);
 
-            for i in range(3):
-                eigen_vector = null(A - Arrai.identity(A.shape) * eigen_val[i]);
-                eigen_vectors = eigen_vectors.set_col(i, eigen_vector)
 
-            return (eigen_vectors, eigen_vals)
+        else:
+            Explosion.POWER_METHOD_ACOS_LARGER_ONE.bang() # acos(a/b), a/b cant be larger than 1
+
+    else:
+        Explosion.EIGEN_DIM_NOT_SUPPORTED.bang()
+
+    eigen_vectors = Arrai.zeros(A.shape)  
+    for i in range(A.length()):
+        
+        eigen_vector = null(A - Arrai.identity(A.shape) * eigen_val[i]); # solve for (A - I * lambda) x = 0
+        eigen_vectors = eigen_vectors.set_col(i, eigen_vector) # concenate the eigen vectors into matrix
+
+    return (eigen_vectors, eigen_vals)
 
 
 
 
-
-
-
-
+# This Function find the dorminant eigen values, vectors (normalized)
+ERROR_PM = 0.0000001
 def power_method(A: Arrai) -> (NumberTypes, Arrai):
     
     if not is_square(A):
@@ -219,15 +220,15 @@ def power_method(A: Arrai) -> (NumberTypes, Arrai):
 
         max_value = 0
         for i in x: # Attempt to find the max absolute value in x's elements
-            if(math.fabs(i[0]) > math.fabs(max_value)): 
+            if(abs(i[0]) > abs(max_value)): 
                 max_value = i[0]
 
         prev_approximation = approximation;
-        approximation = x / max_value # normalize the vector to its max element be 1
+        approximation = x / max_value # normalize the vector, so that its largest element is 1
 
 
         for i in range(A.shape[0]):
-            if (math.fabs(approximation[i][0] - prev_approximation[i][0]) > ERROR):
+            if (abs(approximation[i][0] - prev_approximation[i][0]) > ERROR_PM):
                 break
         else:
             break
@@ -239,8 +240,6 @@ def power_method(A: Arrai) -> (NumberTypes, Arrai):
 
 
     return (normalize(eigen_vector), eigen_value)
-
-
 
 
 
@@ -274,6 +273,8 @@ def normalize(arr: Arrai) -> Arrai:
         return
 
     elif(is_vector(arr)):
+        if is_zeros(arr):
+            return Arrai.zeros(arr.shape)
         return arr / norm(arr)
     else:
         Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
@@ -454,7 +455,7 @@ def is_parallel(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if math.fabs(dot(a, b)[0][0] - norm(a) * norm(b)) < ERROR:
+            if abs(dot(a, b)[0][0] - norm(a) * norm(b)) < ERROR:
                 return True
 
             else:
@@ -474,7 +475,7 @@ def is_orthogonal(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if math.fabs(dot(a, b)[0][0]) < ERROR:
+            if abs(dot(a, b)[0][0]) < ERROR:
                 return True
 
             else:
