@@ -25,7 +25,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
     if (not isinstance(arr_A, Arrai) 
         or (arr_B is not None and not isinstance(arr_B, Arrai))):
-    
+
         Explosion.INVALID_ARGS_NOT_ARRAI.bang()
 
     i_lead = 0 # Index of column vector in matrix
@@ -34,7 +34,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
     has_B = False
 
-    if(arr_B != None):
+    if arr_B is not None:
         if(arr_B.shape[0] != row_count): # If the row size not matched
             Explosion.RREF_ROWSIZE_MISMATCHED.bang()
             return
@@ -47,21 +47,21 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
     ret_A = copy.deepcopy(arr_A)
 
     rank = 0
-    det = 1
+    det = Decimal(1.0)
 
     for r in range(row_count):
 
-        if (i_lead >= col_count_A): break # Return when there are all zeros left and no more operation are available
+        if i_lead >= col_count_A: break # Return when there are all zeros left and no more operation are available
 
         i = r
         while math.isclose(ret_A[i][i_lead], 0, abs_tol=ERROR): # Search for a non-zero element to swap its row with row r
             i += 1
-            if(i == row_count): # If it hit the bottom
+            if i == row_count: # If it hit the bottom
                 i = r # Return to the starting position 
                 i_lead += 1 # And move right(in array) by one
-                if(i_lead == col_count_A): break # Return when there are all zeros left and no more operation are available
+                if i_lead == col_count_A: break # Return when there are all zeros left and no more operation are available
         
-        if(i_lead >= col_count_A): break
+        if i_lead >= col_count_A: break
 
         # If it haven't returned yet, means a non-zero lead has been found
         # Swap with the row the non-zero element is
@@ -73,7 +73,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
         But beware of other case where the mutability is required
         """
 
-        if i is not r:
+        if i != r:
             det *= -1
             # ret_A = swap_row(ret_A, i, r)
             ret_A.array[i], ret_A.array[r] = ret_A.array[r], ret_A.array[i]
@@ -93,11 +93,12 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
 
         for i in range(row_count): # Elementary row operation to clean up columns
-            if(i == r): continue
+            if i == r: 
+                continue
             lead = ret_A[i][i_lead]
             # ret_A = ret_A.set_row(i, ret_A.row(i) - ret_A.row(r) * lead)
             ret_A.array[i] = [ret_A.array[i][j] - ret_A.array[r][j] * lead for j in range(col_count_A)]
-            if(has_B): 
+            if has_B: 
                 # ret_B = ret_B.set_row(i, ret_B.row(i) - ret_B.row(r) * lead);
                 ret_B.array[i] = [ret_B.array[i][j] - ret_B.array[r][j] * lead for j in range(col_count_B)]
 

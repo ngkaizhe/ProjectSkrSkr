@@ -2,7 +2,7 @@ from arrai.arrai import Arrai
 from arrai.basic_operations import is_vector
 import re
 from typing import List
-
+from decimal import Decimal
 
 # helper functions
 def set_function_patterns() -> str:
@@ -109,6 +109,13 @@ functions_map_list = {
 class UIManager(object):
 
     def __init__(self):
+        """
+
+        specific the digit of precision in get_string
+        """
+        self.round_answer : bool = True
+        self.digit_round : int = 4
+
         self.vector_arrais: list
         self.recycle_bin: list
         self.matrix_arrais: list
@@ -486,45 +493,94 @@ class UIManager(object):
             return None
 
     def get_string(self, arrai: (Arrai, int, float))->str:
+
         answer_string = ''
         if isinstance(arrai, Arrai):
-            for i in arrai.array:
-                if i is not None:
-                    for j in i:
-                        answer_string += str(j) + ' '
 
-                    answer_string = answer_string[:-1]
-                    answer_string += '\n'
+            (max_integer_len, max_decimal_len) =  get_max_decimal_len_in_arrai(arrai)
 
-        elif isinstance(arrai, (int, float, bool)):
-            answer_string += str(arrai)
+            if self.round_answer:
+                decimal_len = self.digit_round if max_decimal_len > self.digit_round else max_decimal_len
+            else:
+                decimal_len = max_decimal_len
+
+
+            str_len = max_integer_len + decimal_len + 1 # 2 space
+            if decimal_len != 0: str_len += 1 # +1 for space for dot
+
+            answer_string = arrai.format_str(str_len, decimal_len)
+
+
+        elif isinstance(arrai, (int, float, bool, Decimal)):
+            if self.round_answer and isinstance(arrai, float): answer_string = '{:.{prec}f}'.format(arrai, prec=self.digit_round)
+            else: answer_string = str(arrai)
 
         elif isinstance(arrai, tuple):
-            for single_arrai in arrai:
-                for i in single_arrai.array:
-                    if i is not None:
-                        for j in i:
-                            answer_string += str(j) + ' '
+            global_max_integer_len = 0
+            global_max_decimal_len = 0
 
-                        answer_string = answer_string[:-1]
-                        answer_string += '\n'
+            for single_arrai in arrai:
+                (max_integer_len, max_decimal_len) =  get_max_decimal_len_in_arrai(single_arrai)
+                global_max_integer_len = max(global_max_integer_len, max_integer_len)
+                global_max_decimal_len = max(global_max_decimal_len, max_decimal_len)
+
+
+            if self.round_answer:
+                decimal_len = self.digit_round if global_max_decimal_len > self.digit_round else global_max_decimal_len
+            else:
+                decimal_len = global_max_decimal_len
+                
+            str_len = global_max_integer_len + decimal_len + 1
+
+            for single_arrai in arrai:
+                answer_string += single_arrai.format_str(str_len, decimal_len)
                 answer_string += '\n'
+
+            answer_string = answer_string[:-1]
 
         return answer_string
 
 
+
+def get_max_decimal_len_in_arrai(arrai: (Arrai)) -> (int, int):
+    if isinstance(arrai, Arrai):
+        max_integer_len = 0
+        max_decimal_len = 0
+
+        for row in arrai.array:
+            for el in row:
+                length :(tuple) = len_decimal(el) 
+                max_integer_len = max(max_integer_len, length[0])
+                max_decimal_len = max(max_decimal_len, length[1])
+        return (max_integer_len, max_decimal_len)
+
+def len_decimal(num : (Decimal, float, int)) -> (int, int):
+    split_string = "{0:f}".format(num).split('.')
+    length = [0, 0]
+    length[0] = len(split_string[0]) # Integer len
+    if len(split_string) == 2: length[1] = len(split_string[1]) # Decimal len
+    return (length[0], length[1])
+
 if __name__ == '__main__':
+    import os
+    working_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_dir = os.path.join(working_dir, "TestData")
+
+
+
     uimanager = UIManager()
 
     print_answer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    print_answer_matrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    print_answer_matrix = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
     all_answers = []
     vector = False
     matrix = True
 
     if vector:
+        test_file_dir = os.path.join(test_data_dir, "Vector")
+
         # V1.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V1.txt'
+        filename = os.path.join(test_file_dir, 'V1.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -542,7 +598,7 @@ if __name__ == '__main__':
 
 
         # V2.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V2.txt'
+        filename = os.path.join(test_file_dir, 'V2.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -559,7 +615,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V3.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V3.txt'
+        filename = os.path.join(test_file_dir, 'V3.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -576,7 +632,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V4.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V4.txt'
+        filename = os.path.join(test_file_dir, 'V4.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -593,7 +649,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V5.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V5.txt'
+        filename = os.path.join(test_file_dir, 'V5.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -610,7 +666,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V6.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V6.txt'
+        filename = os.path.join(test_file_dir, 'V6.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -627,7 +683,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V7.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V7.txt'
+        filename = os.path.join(test_file_dir, 'V7.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -643,7 +699,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V8.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V8.txt'
+        filename = os.path.join(test_file_dir, 'V8.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -659,7 +715,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V9.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V9.txt'
+        filename = os.path.join(test_file_dir, 'V9.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -676,7 +732,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V10.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V10.txt'
+        filename = os.path.join(test_file_dir, 'V10.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -693,7 +749,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V11.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V11.txt'
+        filename = os.path.join(test_file_dir, 'V11.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -710,7 +766,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V12.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V12.txt'
+        filename = os.path.join(test_file_dir, 'V12.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -727,7 +783,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V13.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V13.txt'
+        filename = os.path.join(test_file_dir, 'V13.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -743,7 +799,7 @@ if __name__ == '__main__':
             print('\n')
 
         # V14.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V14.txt'
+        filename = os.path.join(test_file_dir, 'V14.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -759,7 +815,7 @@ if __name__ == '__main__':
             print('\n')
 
     # V15.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V15.txt'
+        filename = os.path.join(test_file_dir, 'V15.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -775,7 +831,7 @@ if __name__ == '__main__':
             print('\n')
 
     # V16.txt
-        filename = 'C:\\Users\\User\\Desktop\\Vector\\V16.txt'
+        filename = os.path.join(test_file_dir, 'V16.txt')
         with open(filename, 'r') as file:
             read_data = file.read()
         uimanager.set_arrais(read_data)
@@ -791,8 +847,10 @@ if __name__ == '__main__':
                 print(i)
             print('\n')
 
+
+    test_file_dir = os.path.join(test_data_dir, "Matrix")
 # M1.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M1.txt'
+    filename = os.path.join(test_file_dir, 'M1.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -808,7 +866,7 @@ if __name__ == '__main__':
         print('\n')
 
     # M2.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M2.txt'
+    filename = os.path.join(test_file_dir, 'M2.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -824,7 +882,7 @@ if __name__ == '__main__':
         print('\n')
 
     # M3.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M3.txt'
+    filename = os.path.join(test_file_dir, 'M3.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -841,7 +899,7 @@ if __name__ == '__main__':
 
 
     # M4.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M4.txt'
+    filename = os.path.join(test_file_dir, 'M4.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -858,7 +916,7 @@ if __name__ == '__main__':
 
 
     # M5.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M5.txt'
+    filename = os.path.join(test_file_dir, 'M5.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -874,7 +932,7 @@ if __name__ == '__main__':
         print('\n')
 
 # M6.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M6.txt'
+    filename = os.path.join(test_file_dir, 'M6.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -890,7 +948,7 @@ if __name__ == '__main__':
         print('\n')
 
 # M7.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M7.txt'
+    filename = os.path.join(test_file_dir, 'M7.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -908,7 +966,7 @@ if __name__ == '__main__':
 
 
 # M8.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M8.txt'
+    filename = os.path.join(test_file_dir, 'M8.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -924,7 +982,7 @@ if __name__ == '__main__':
         print('\n')
 
 # M9.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M9.txt'
+    filename = os.path.join(test_file_dir, 'M9.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -940,7 +998,7 @@ if __name__ == '__main__':
         print('\n')
 
 # M10.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M10.txt'
+    filename = os.path.join(test_file_dir, 'M10.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)
@@ -956,7 +1014,7 @@ if __name__ == '__main__':
         print('\n')
 
 # M11.txt
-    filename = 'C:\\Users\\User\\Desktop\\Matrix\\M11.txt'
+    filename = os.path.join(test_file_dir, 'M11.txt')
     with open(filename, 'r') as file:
         read_data = file.read()
     uimanager.set_arrais(read_data)

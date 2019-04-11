@@ -1,10 +1,20 @@
-#from decimal import Decimal
+from decimal import Decimal
 
 # recursive function below
+round_answer = True
+digit_round = 4
+
+def len_decimal(num : (Decimal, float, int)) -> (int, int):
+    split_string = "{0:f}".format(num).split('.')
+    length = [0, 0]
+    length[0] = len(split_string[0])
+    if len(split_string) == 2: length[1] = len(split_string[1])
+    return (length[0], length[1])
+
 def get_string(element: list, current_line: int, ndim: int, seperate_string: str, isFormal: bool) -> str:
     if isinstance(element, list) is False:
         #return str(round(Decimal(element),2) + 0)
-        return "{0:.2f}".format(element)
+        return "{0:.4f}".format(element + 0)
 
     else:
         answer = '['

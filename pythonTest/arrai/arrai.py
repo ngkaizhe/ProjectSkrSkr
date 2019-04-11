@@ -4,7 +4,7 @@ from .recursive_functions import *
 from .explosion import Explosion
 from decimal import Decimal
 
-ERROR = 0.00000000001
+ERROR = 0.0000000001
 NumberTypes = (int, float, complex, Decimal)
 
 class Arrai(object):
@@ -38,6 +38,17 @@ class Arrai(object):
         answer += '\n'
 
         return answer
+
+    def format_str(self, space : int = 0, prec : int = 4) -> str:
+        answer_string = ''
+        for row in self.array:
+            for el in row:
+                if space == 0:
+                    answer_string += '{:>.{prec}f}'.format(el, prec=prec)
+                else:
+                    answer_string += '{:>{space}.{prec}f}'.format(el, space=space, prec=prec)
+            answer_string += '\n'
+        return answer_string
 
     def __getitem__(self, index):
         return self.array[index]
