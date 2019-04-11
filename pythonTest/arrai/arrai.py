@@ -2,10 +2,10 @@ import copy
 
 from .recursive_functions import *
 from .explosion import Explosion
+from decimal import Decimal
 
-
-ERROR = 0.0000000000001
-NumberTypes = (int, float, complex)
+ERROR = 0.00000000001
+NumberTypes = (int, float, complex, Decimal)
 
 class Arrai(object):
     """description of class"""
@@ -16,8 +16,7 @@ class Arrai(object):
     def __init__(self, object: list) -> None:
         # attribute definition
         if (isinstance(object, list) is False
-            and isinstance(object, int) is False
-            and isinstance(object, float) is False):
+            and isinstance(object, NumberTypes) is False):
                 Explosion.INIT_ARGUMENT_TYPE_ERROR.bang()
 
         if isinstance(object, list) is True and len(object) == 0:
@@ -233,7 +232,7 @@ class Arrai(object):
                 Explosion.INVALID_ARRAY_DIM.bang()
             for j in i:
 
-                if(not(isinstance(j, NumberTypes))):
+                if(not(isinstance(j, Decimal))):
                     Explosion.INVALID_NUMERICAL_TYPE.bang()
 
         return
@@ -251,22 +250,29 @@ class Arrai(object):
         # vector passing inside/ 1D array
         elif self.ndim == 1:
             self.array = []
-            self.array.append(object)
+            self.array.append(copy.deepcopy(object))
             self.ndim = 2
 
         # matrix/ 2D array passing inside
         elif self.ndim == 2:
-            self.array = object
+            self.array = copy.deepcopy(object)
 
         else:
             
             self.array = None
 
+
         if(self.array == None):
             raise ValueError("array cannot be blank")
             #TODO : throw exceptions
-        
+
+        # Transform all elements into type Decimal
+        for row in self.array:
+            for i in range(len(row)):
+                row[i] = Decimal(row[i])
+
         self.shape = Arrai.get_shape(self.array)
+
         Arrai.check_validity(self)
 
     def dot(self, other) -> 'Arrai':

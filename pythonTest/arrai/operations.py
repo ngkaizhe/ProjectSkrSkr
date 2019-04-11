@@ -95,7 +95,7 @@ def null(A: Arrai, flag: str = "") -> Arrai:
     i_col = 0
     while(True):
         if (i_col >= col_count): break
-        if (i_row < row_count and abs(A[i_row][i_col]) > ERROR): # If pivot is found, go next row
+        if (i_row < row_count and not math.isclose(A[i_row][i_col], 0, abs_tol=ERROR)): # If pivot is found, go next row
             i_row += 1
         else:
             i_unknowns.append(i_col) # Keep the index of unknown variables
@@ -111,7 +111,7 @@ def null(A: Arrai, flag: str = "") -> Arrai:
         ans[i_unknowns[i]][i] = 1
         for j in range(row_count):
             k = j
-            while(k < col_count and abs(A[j][k] ) < ERROR): # Find the pivot in the row
+            while(k < col_count and math.isclose(A[j][k], 0, abs_tol=ERROR)): # Find the pivot in the row
                 k += 1
             if(k == col_count): break
 
@@ -146,7 +146,7 @@ def eigen(A: Arrai) -> (NumberTypes, Arrai):
         y = -(a + d)
         z = a*d - b*c
 
-        S = math.sqrt(y**2 - 4*x*z)
+        S = Decimal.sqrt(y**2 - 4*x*z)
 
         eigen_val = [0,0]
         eigen_val[0] = (-y + S) / (2*x)
@@ -171,13 +171,13 @@ def eigen(A: Arrai) -> (NumberTypes, Arrai):
         eigen_val = [0,0,0]
         if(R**2 < Q**3):
             
-            theta = math.acos(R / math.sqrt(Q**3))
-            S = -2 * math.sqrt(Q)
+            theta = math.acos(R / Decimal.sqrt(Q**3))
+            S = -2 * Decimal.sqrt(Q)
             T = x / 3
             
-            eigen_val[0] = S * math.cos(theta/3) - T
-            eigen_val[1] = S * math.cos((theta + 2*math.pi)/3) - T
-            eigen_val[2] = S * math.cos((theta - 2*math.pi)/3) - T
+            eigen_val[0] = S * Decimal(math.cos(theta/3)) - T
+            eigen_val[1] = S * Decimal(math.cos((theta + 2*math.pi)/3)) - T
+            eigen_val[2] = S * Decimal(math.cos((theta - 2*math.pi)/3)) - T
 
             eigen_vectors = Arrai.zeros(A.shape)  
             eigen_vals = Arrai([[eigen_val[0]],[eigen_val[1]],[eigen_val[2]]]);
@@ -202,6 +202,7 @@ def eigen(A: Arrai) -> (NumberTypes, Arrai):
 
 # This Function find the dorminant eigen values, vectors (normalized)
 ERROR_PM = 0.0000001
+ITER_LIMIT = 10000
 def power_method(A: Arrai) -> (NumberTypes, Arrai):
     
     if not is_square(A):
@@ -214,8 +215,10 @@ def power_method(A: Arrai) -> (NumberTypes, Arrai):
     approximation  = Arrai.full((A.shape[0], 1), 1)
     prev_approximation = Arrai.zeros((A.shape[0], 1))
 
-    while(True):
+    iter_count = 0
 
+    while(iter_count < ITER_LIMIT):
+        iter_count += 1
         x = A * x
 
         max_value = 0
@@ -226,9 +229,9 @@ def power_method(A: Arrai) -> (NumberTypes, Arrai):
         prev_approximation = approximation;
         approximation = x / max_value # normalize the vector, so that its largest element is 1
 
-
         for i in range(A.shape[0]):
-            if (abs(approximation[i][0] - prev_approximation[i][0]) > ERROR_PM):
+            # If there are any of the difference between approximations larger than 0, means havent optimized
+            if not math.isclose(approximation[i][0], prev_approximation[i][0], abs_tol=ERROR_PM):
                 break
         else:
             break
@@ -237,7 +240,8 @@ def power_method(A: Arrai) -> (NumberTypes, Arrai):
         # By Rayleigh quotient
         eigen_vector = approximation;
         eigen_value = dot(A * eigen_vector, eigen_vector) / dot(eigen_vector, eigen_vector)
-
+    else:
+        Explosion.POWER_METHOD_ITER_OVER_LIMIT.bang("ITER_LIMIT: "+ str(ITER_LIMIT))
 
     return (normalize(eigen_vector), eigen_value)
 
@@ -262,7 +266,7 @@ def norm(arr: Arrai) -> NumberTypes:
         return
 
     elif(is_vector(arr)):
-        return math.sqrt(to_scalar(dot(arr, arr)))
+        return Decimal.sqrt(to_scalar(dot(arr, arr)))
     else:
         Explosion.TYPE_NOT_SUPPORTED.bang("normalization of matrix is not supported")
         # TODO
@@ -415,9 +419,9 @@ def triangle_area(a: Arrai, b: Arrai) -> NumberTypes:
 
         else:
             radians = angle_radians(a, b)
-            sin = math.sin(radians)
+            val_sin = math.sin(radians)
 
-            return 0.5 * sin * norm(a) * norm(b)
+            return Decimal(0.5 * val_sin) * norm(a) * norm(b)
 
     else:
         Explosion.TRIANGLE_AREA_NOT_VECTOR.bang()
@@ -455,7 +459,7 @@ def is_parallel(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if abs(dot(a, b)[0][0] - norm(a) * norm(b)) < ERROR:
+            if math.isclose(dot(a, b)[0][0], norm(a) * norm(b), abs_tol=ERROR):
                 return True
 
             else:
@@ -475,7 +479,7 @@ def is_orthogonal(a: Arrai, b: Arrai) -> bool:
             return None
 
         else:
-            if abs(dot(a, b)[0][0]) < ERROR:
+            if math.isclose(dot(a, b)[0][0], 0, abs_tol=ERROR):
                 return True
 
             else:

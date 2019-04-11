@@ -130,7 +130,7 @@ def is_zeros(object: Arrai) -> bool:
     if(isinstance(object, Arrai)):
         for i in object:
             for j in i:
-                if(math.fabs(j) > ERROR): return False
+                if not math.isclose(math.fabs(j), 0, abs_tol=ERROR): return False
         return True
     return False
 
