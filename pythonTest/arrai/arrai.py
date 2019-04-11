@@ -4,7 +4,7 @@ from .recursive_functions import *
 from .explosion import Explosion
 
 
-ERROR = 0.000000001
+ERROR = 0.0000000000001
 NumberTypes = (int, float, complex)
 
 class Arrai(object):
@@ -232,6 +232,7 @@ class Arrai(object):
             if(len(i) != self.shape[1]):
                 Explosion.INVALID_ARRAY_DIM.bang()
             for j in i:
+
                 if(not(isinstance(j, NumberTypes))):
                     Explosion.INVALID_NUMERICAL_TYPE.bang()
 

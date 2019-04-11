@@ -3,6 +3,7 @@ import copy
 from .arrai import *
 from .explosion import Explosion
 import math
+from decimal import Decimal
 """ 
 arrai_helpers.py
 
@@ -44,6 +45,16 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
 
     ret_A = copy.deepcopy(arr_A)
 
+
+    for row in ret_A:
+        for i in range(len(row)):
+            row[i] = Decimal(row[i])
+
+    if (has_B):
+        for row in ret_B:
+            for i in range(len(row)):
+                row[i] = Decimal(row[i])
+
     rank = 0
     det = 1
 
@@ -52,7 +63,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
         if (i_lead >= col_count_A): break # Return when there are all zeros left and no more operation are available
 
         i = r
-        while (ret_A[i][i_lead] == 0): # Search for a non-zero element to swap its row with row r
+        while (abs(ret_A[i][i_lead]) < ERROR): # Search for a non-zero element to swap its row with row r
             i += 1
             if(i == row_count): # If it hit the bottom
                 i = r # Return to the starting position 
@@ -79,7 +90,7 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
                 # ret_B = swap_row(ret_B, i, r)
                 ret_B.array[i], ret_B.array[r] = ret_B.array[r], ret_B.array[i]
 
-        if(math.fabs(ret_A[r][i_lead]) > 0.00000000001): # Make the lead to be 1 by dividing whole row by lead itself
+        if(abs(ret_A[r][i_lead]) > ERROR): # Make the lead to be 1 by dividing whole row by lead itself
             lead = ret_A[r][i_lead]
             det *= lead
             # ret_A = ret_A.set_row(r, ret_A.row(r) / lead);
@@ -102,11 +113,20 @@ def helper_RREF(arr_A: Arrai, arr_B: Arrai = None) -> Arrai: #(tuple(Arrai, Arra
         i_lead += 1
         rank += 1 
 
+    for row in ret_A:
+        for i in range(len(row)):
+            row[i] = float(row[i])
+
+    if has_B:
+        for row in ret_B:
+            for i in range(len(row)):
+                row[i] = float(row[i])
+
     ret = dict()
     if(has_B): ret["B"] = ret_B
     ret["A"] = ret_A
     ret["rank"] = rank
-    ret["det"] = det if (rank == row_count and is_square(arr_A)) else 0
+    ret["det"] = float(det) if (rank == row_count and is_square(arr_A)) else 0
     return ret
 
 
