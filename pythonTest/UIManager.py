@@ -3,6 +3,7 @@ from arrai.basic_operations import is_vector
 import re
 from typing import List
 from decimal import Decimal
+from arrai.explosion import Explosion
 
 # helper functions
 def set_function_patterns() -> str:
@@ -184,8 +185,8 @@ class UIManager(object):
         answers_string = ''
 
         for problem in text_list:
-            self.build_RPN(problem)
             try:
+                self.build_RPN(problem)
                 answer: Arrai = self.calculate_RPN()
 
             except Exception as explosion:
@@ -332,6 +333,9 @@ class UIManager(object):
             # whitespace cut off
             elif re.search('^(\s)', problem[start:]):
                 start += 1
+
+            else:
+                return Explosion.INPUT_INVALID.bang()
 
         return problem_pieces
 

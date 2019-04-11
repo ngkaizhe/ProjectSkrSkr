@@ -51,6 +51,8 @@ class Explosion(Enum):
     EIGEN_DIM_NOT_SUPPORTED = ValueError("Eigen only support matrix of size 2*2 and 3*3 currently")
     NO_NULL_SPACE = ValueError("No null space")
 
+    INPUT_INVALID = ValueError('Sorry, your input is invalid! Cant match some words!')
+
     TYPE_NOT_SUPPORTED = ValueError("Type Not supported")
 
     def bang(self, msg = ""):

@@ -1,8 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QToolTip, QPlainTextEdit, QLabel, QFileDialog
+from PyQt5.QtWidgets import QWidget, QPushButton, QPlainTextEdit, QLabel, QFileDialog
 from PyQt5 import QtGui
-from PyQt5.QtGui import QIcon
 from UIManager import UIManager
+import os
 
 class App(QWidget):
  
@@ -16,6 +16,11 @@ class App(QWidget):
         self.width = width
         self.height = height
         self.setWindowIcon(QtGui.QIcon("icon.png"))
+
+        #file location
+        self.open_file_location = os.path.dirname(os.path.abspath(__file__))
+        self.save_file_location = os.path.dirname(os.path.abspath(__file__))
+
 
         # set textbox
         self.setTextBox()
@@ -106,7 +111,9 @@ class App(QWidget):
         self.input_label.move(350, 225)
 
     def openFileDialog(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "C://", "Text Files (*.txt)")
+        fileName, _ = QFileDialog.getOpenFileName(self, "Open file",  self.open_file_location, "Text Files (*.txt)")
+        tempPos = fileName.rfind('/')
+        self.open_file_location = fileName[: tempPos + 1]
 
         if fileName:
             with open(fileName, 'r') as file:
@@ -114,8 +121,11 @@ class App(QWidget):
             self.input_textbox.setPlainText(read_data)
 
     def saveFileDialog(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", "C://",
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", self.save_file_location,
                                                   "Text Files (*.txt)")
+        tempPos = fileName.rfind('/')
+        self.save_file_location = fileName[: tempPos + 1]
+
         if fileName:
             with open(fileName, 'w') as file:
                 file.write(self.output_textbox.toPlainText())
