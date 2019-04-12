@@ -169,7 +169,7 @@ class App(QWidget):
             return
 
         self.uiManager.set_arrais(text)
-        self.input_textbox.clea r()
+        self.input_textbox.clear()
         self.update()
 
     def run_result(self):
