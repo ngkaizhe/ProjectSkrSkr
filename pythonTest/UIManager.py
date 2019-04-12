@@ -115,11 +115,11 @@ class UIManager(object):
         specific the digit of precision in get_string
         """
         self.round_answer : bool = True
-        self.digit_round : int = 4
+        self.digit_round : int = 6
 
-        self.vector_arrais: list
-        self.recycle_bin: list
-        self.matrix_arrais: list
+        self.vector_arrais: list = []
+        self.recycle_bin: list = []
+        self.matrix_arrais: list = []
         """
         map_list = {
             'Operator/Function': {
@@ -146,9 +146,6 @@ class UIManager(object):
         self.RPN: list
 
     def set_arrais(self, text_string: str) -> None:
-        self.vector_arrais = []
-        self.matrix_arrais =[]
-        self.recycle_bin = []
 
         text_string_list = text_string.splitlines()
 

@@ -78,6 +78,18 @@ class App(QWidget):
         self.set_button.setStyleSheet("text-align: center")
         self.set_button.clicked.connect(self.set_up_ui_manager)
 
+        self.clear_vector_button = QPushButton('clear vector', self)
+        self.clear_vector_button.move(750, 430)
+        self.clear_vector_button.setFont(font)
+        self.clear_vector_button.setStyleSheet("text-align: center")
+        self.clear_vector_button.clicked.connect(self.vector_clear)
+
+        self.clear_matrix_button = QPushButton('clear matrix', self)
+        self.clear_matrix_button.move(1050, 430)
+        self.clear_matrix_button.setFont(font)
+        self.clear_matrix_button.setStyleSheet("text-align: center")
+        self.clear_matrix_button.clicked.connect(self.matrix_clear)
+
     def setTextBox(self):
         # textbox part
         self.output_textbox = QPlainTextEdit(self)
@@ -91,6 +103,16 @@ class App(QWidget):
         self.calculated_textbox = QPlainTextEdit(self)
         self.calculated_textbox.move(350, 50)
         self.calculated_textbox.resize(200, 130)
+
+        self.vector_textbox = QPlainTextEdit(self)
+        self.vector_textbox.move(600, 50)
+        self.vector_textbox.resize(250, 350)
+        self.vector_textbox.setReadOnly(True)
+
+        self.matrix_textbox = QPlainTextEdit(self)
+        self.matrix_textbox.move(900, 50)
+        self.matrix_textbox.resize(250, 350)
+        self.matrix_textbox.setReadOnly(True)
 
     #set label
     def setLabel(self):
@@ -109,6 +131,14 @@ class App(QWidget):
         self.input_label = QLabel('Input:', self)
         self.input_label.setFont(font)
         self.input_label.move(350, 225)
+
+        self.vector_label = QLabel('Vector:', self)
+        self.vector_label.setFont(font)
+        self.vector_label.move(600, 25)
+
+        self.matrix_label = QLabel('Matrix:', self)
+        self.matrix_label.setFont(font)
+        self.matrix_label.move(900, 25)
 
     def openFileDialog(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Open file",  self.open_file_location, "Text Files (*.txt)")
@@ -130,6 +160,8 @@ class App(QWidget):
             with open(fileName, 'w') as file:
                 file.write(self.output_textbox.toPlainText())
 
+            self.output_textbox.clear()
+
     def set_up_ui_manager(self):
         text = self.input_textbox.toPlainText()
         # misclick condition
@@ -137,7 +169,8 @@ class App(QWidget):
             return
 
         self.uiManager.set_arrais(text)
-        self.input_textbox.clear()
+        self.input_textbox.clea r()
+        self.update()
 
     def run_result(self):
         text = self.calculated_textbox.toPlainText()
@@ -145,7 +178,37 @@ class App(QWidget):
         if text == '':
             return
 
-        answer = self.uiManager.run_result(text)
+        answer = self.output_textbox.toPlainText()
+        answer += self.uiManager.run_result(text)
         self.output_textbox.setPlainText(answer)
         self.calculated_textbox.clear()
+        self.update()
 
+    def update(self):
+        vector_string = ''
+        k=0
+
+        for i in self.uiManager.vector_arrais:
+            vector_string += '$v' + str(k) + ':' + str(i) + '\n'
+            k += 1
+
+        self.vector_textbox.setPlainText(vector_string)
+
+        matrix_string = ''
+        k = 0
+
+        for i in self.uiManager.matrix_arrais:
+            matrix_string += '$m' + str(k) + ':' + str(i) + '\n'
+            k += 1
+
+        self.matrix_textbox.setPlainText(matrix_string)
+
+    def vector_clear(self):
+        if self.uiManager.vector_arrais and isinstance(self.uiManager.vector_arrais, list):
+            self.uiManager.vector_arrais.clear()
+            self.update()
+
+    def matrix_clear(self):
+        if self.uiManager.matrix_arrais and isinstance(self.uiManager.matrix_arrais, list):
+            self.uiManager.matrix_arrais.clear()
+            self.update()

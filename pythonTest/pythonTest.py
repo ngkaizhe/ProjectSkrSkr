@@ -6,5 +6,5 @@ import sys
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App('Matrix Calculation', 600, 200, 630, 480)
+    ex = App('Matrix Calculation', 300, 300, 1200, 480)
     sys.exit(app.exec_())
