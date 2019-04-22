@@ -1,3 +1,5 @@
+The main.exe is in the ProjectSkrSkr/dist/main/
+
 input variables:
 for vector: $v{number}
 for matrix: $m{number}
