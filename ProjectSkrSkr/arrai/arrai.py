@@ -314,6 +314,12 @@ class Arrai(object):
     def set_col(self, c: int, vec: 'Arrai') -> 'Arrai':
         return set_col(self, c, vec)
 
+    def insert_row(self, vec: 'Arrai', r: int = -1) -> 'Arrai':
+        return insert_row(self, vec, r)
+
+    def insert_col(self, vec: 'Arrai', c: int = -1) -> 'Arrai':
+        return insert_col(self, vec, c)
+
     def swap_row(self, r1: int, r2: int) -> 'Arrai':
         return swap_row(self, r1, r2)
 

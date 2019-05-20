@@ -46,6 +46,49 @@ def set_row(arr: Arrai, r: int, vec: Arrai) -> Arrai:
     ret.array[r] = [el for el in vec[0]]
     return ret
 
+def insert_row(arr: Arrai, vec: Arrai, r: int = -1) -> Arrai:
+    if(r == -1): r = arr.shape[0]
+    elif(r > arr.shape[0]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[1]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    vec = to_row_vector(vec) # Convert the vector into row vector to aid with the operation
+
+    arr.array.append([])
+    for i in range(arr.shape[0], r-1, -1):
+        arr.array[i] = arr.array[i-1]
+
+    arr.array[r] = [el for el in vec[0]]
+    arr.shape[0] += 1;
+
+    return arr
+
+def insert_col(arr: Arrai, vec: Arrai, c: int = -1) -> Arrai:
+    if(c == -1): c = arr.shape[1]
+    elif(c > arr.shape[1]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+    if not is_vector(vec) or vec.length() != arr.shape[0]:
+        Explosion.SET_INVALID_VECTOR.bang()
+        return
+
+    vec = to_row_vector(vec)
+
+    for i in range(len(arr.array)):
+        arr.array[i].append(0)
+        for j in range(arr.shape[1], c-1, -1):
+            arr.array[i][j] = arr.array[i][j-1]
+
+    for i in range(len(arr.array)):
+        arr[i][c] = vec[0][i]
+
+    arr.shape[1] += 1;
+    
+    return arr
+
 # Function to set column vector of index c of arr
 def set_col(arr: Arrai, c: int, vec: Arrai) -> Arrai:
     if(c >= arr.shape[1]):
