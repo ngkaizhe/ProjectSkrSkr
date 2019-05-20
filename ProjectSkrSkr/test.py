@@ -9,7 +9,7 @@ if __name__ == "__main__":
 		print(a)
 		print(id(a))
 		print(a.shape)
-		a.delete_col(1)
+		a.delete_col(2)
 		print(a)
 		print(id(a))
 		print(a.shape)

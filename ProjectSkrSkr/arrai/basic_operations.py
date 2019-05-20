@@ -52,10 +52,7 @@ def delete_row(arr: Arrai, r: int = -1) -> Arrai:
         Explosion.SET_DIM_EXCEED.bang()
         return
 
-    for i in range(r, arr.shape[0]-1):
-        arr.array[i] = arr.array[i+1]
-
-    del arr.array[arr.shape[0] - 1]
+    del arr.array[r]
     arr.shape[0] -= 1
 
     return arr
@@ -68,9 +65,7 @@ def delete_col(arr: Arrai, c: int = -1) -> Arrai:
         return
 
     for i in range(len(arr.array)):
-        for j in range(c, arr.shape[1]-1):
-            arr.array[i][j] = arr.array[i][j+1]
-        del arr.array[i][arr.shape[1]-1]
+        del arr.array[i][c]
 
     arr.shape[1] -= 1;
 
