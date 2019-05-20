@@ -46,6 +46,36 @@ def set_row(arr: Arrai, r: int, vec: Arrai) -> Arrai:
     ret.array[r] = [el for el in vec[0]]
     return ret
 
+def delete_row(arr: Arrai, r: int = -1) -> Arrai:
+    if(r == -1): r = arr.shape[0]-1
+    elif(r >= arr.shape[0]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+
+    for i in range(r, arr.shape[0]-1):
+        arr.array[i] = arr.array[i+1]
+
+    del arr.array[arr.shape[0] - 1]
+    arr.shape[0] -= 1
+
+    return arr
+
+def delete_col(arr: Arrai, c: int = -1) -> Arrai:
+    if (c == -1):
+        c = arr.shape[1]-1
+    elif (c >= arr.shape[1]):
+        Explosion.SET_DIM_EXCEED.bang()
+        return
+
+    for i in range(len(arr.array)):
+        for j in range(c, arr.shape[1]-1):
+            arr.array[i][j] = arr.array[i][j+1]
+        del arr.array[i][arr.shape[1]-1]
+
+    arr.shape[1] -= 1;
+
+    return arr
+
 def insert_row(arr: Arrai, vec: Arrai, r: int = -1) -> Arrai:
     if(r == -1): r = arr.shape[0]
     elif(r > arr.shape[0]):

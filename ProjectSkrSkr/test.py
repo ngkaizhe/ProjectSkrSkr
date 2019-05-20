@@ -5,8 +5,14 @@ from decimal import Decimal
 if __name__ == "__main__":
 	if True:
 		a = Arrai([[1,2,3],[2,13,4],[3,4,7]])
-		a.insert_col(Arrai([1,4,3]))
+		a.insert_row(Arrai([1,4,3]))
 		print(a)
+		print(id(a))
+		print(a.shape)
+		a.delete_col(1)
+		print(a)
+		print(id(a))
+		print(a.shape)
 	if False:
 		a = Decimal(3)
 		a = Arrai([[100000000,2,3,4,5],[3,4,7,1,2],[2,1,3,3,4],[3,4,7,1,2],[1,2,3,4,5]])
